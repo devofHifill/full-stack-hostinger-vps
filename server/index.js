@@ -11,9 +11,10 @@ app.use(cors({
     const allowed = [
       "http://localhost:5173",
       "http://localhost:5174",
-      "http://localhost:3000"
-      // add production url
+      "http://localhost:3000",
+      "http://76.13.242.148:5174"
     ]
+
 
     if (!origin || allowed.includes(origin)) {
       callback(null, true)

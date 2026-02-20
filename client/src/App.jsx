@@ -6,7 +6,7 @@ function App() {
   const [message, setMessage] = useState(0)
 
   useEffect(() => {
-  fetch(`${import.meta.env.VITE_API_URL}/api/message`)
+  fetch(`http://76.13.242.148:4000/api/message`)
       .then((res) => res.json())
       .then((data) => setMessage(data.message))
       .catch((err) => {

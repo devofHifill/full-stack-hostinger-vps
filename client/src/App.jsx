@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
+
   console.log("VITE_API_URL =", import.meta.env.VITE_API_URL)
+    console.log("Hell0 Surendra")
+
+
   const [message, setMessage] = useState(0)
 
   useEffect(() => {
@@ -20,7 +24,6 @@ function App() {
       <p>{message}</p>
     </>
   )
-  
 }
 
 export default App

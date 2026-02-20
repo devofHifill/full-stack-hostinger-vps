@@ -13,18 +13,18 @@ services:
       - fullstack-net
     restart: unless-stopped
 
-  client:
-    build: ./client
-    container_name: react-client
-    ports:
-      - "5174:3000"
-    environment:
-      - VITE_API_URL=http://server:4000
-    networks:
-      - fullstack-net
-    depends_on:
-      - server
-    restart: unless-stopped
+client:
+  build: ./client
+  container_name: react-client
+  ports:
+    - "5174:3000"
+  environment:
+    - VITE_API_URL=http://76.13.242.148:4000
+  networks:
+    - fullstack-net
+  depends_on:
+    - server
+  restart: unless-stopped
 
 networks:
   fullstack-net:

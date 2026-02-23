@@ -32,7 +32,7 @@ app.use((req, res, next) => {
   next()
 })
 
-app.get("/", (req, res) => res.send("API running 🚀"))
+app.get("/", (req, res) => res.send("API running ðŸš€"))
 
 app.get("/api/message", (req, res) => {
   res.json({ message: "Hello from FDG" })

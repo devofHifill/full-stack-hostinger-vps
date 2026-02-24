@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./Dashboard.css";
 
 const TABS = [
@@ -14,8 +14,14 @@ const TABS = [
 
 function KpiCard({ title, value, changePct, prevLabel }) {
   const isUp = changePct > 0;
-  const changeClass = isUp ? "kpi__change--up" : changePct < 0 ? "kpi__change--down" : "kpi__change--flat";
-  const arrow = isUp ? "↑" : changePct < 0 ? "↓" : "→";
+  const changeClass =
+    isUp
+      ? "kpi__change--up"
+      : changePct < 0
+      ? "kpi__change--down"
+      : "kpi__change--flat";
+
+  const arrow = isUp ? "?" : changePct < 0 ? "?" : "?";
   const abs = Math.abs(changePct);
 
   return (
@@ -38,15 +44,19 @@ function Panel({ title, subtitle, right }) {
       <div className="panel__head">
         <div>
           <div className="panel__title">{title}</div>
-          {subtitle ? <div className="panel__subtitle">{subtitle}</div> : null}
+          {subtitle && (
+            <div className="panel__subtitle">{subtitle}</div>
+          )}
         </div>
-        {right ? <div className="panel__right">{right}</div> : null}
+        {right && <div className="panel__right">{right}</div>}
       </div>
+
       <div className="panel__body">
-        {/* Placeholder chart area */}
         <div className="chartPlaceholder">
           <div className="chartPlaceholder__grid" />
-          <div className="chartPlaceholder__note">Chart placeholder (connect real data later)</div>
+          <div className="chartPlaceholder__note">
+            Chart placeholder (connect real data later)
+          </div>
         </div>
       </div>
     </div>
@@ -57,8 +67,80 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Overview");
   const [dateRange, setDateRange] = useState("Last 30 days");
   const [bot, setBot] = useState("All");
+  const [dbStatus, setDbStatus] = useState({
+    state: "idle",
+    message: "",
+  });
 
-  // Mock metrics (swap with API data later)
+useEffect(() => {
+  const controller = new AbortController();
+
+  const checkConnection = async () => {
+    try {
+      // 1?? Resolve API base
+      const envBase = import.meta.env.VITE_API_URL;
+
+      // If VITE_API_URL exists ? use it
+      // Otherwise fallback to same-origin (Vite proxy)
+      const base = envBase ? envBase.replace(/\/$/, "") : "";
+
+      const url = base
+        ? `${base}/api/db-test`
+        : "/api/db-test";
+
+      console.log("Checking DB connection at:", url);
+
+      setDbStatus({
+        state: "loading",
+        message: "Checking API + Mongo...",
+      });
+
+      // 2?? Fetch request
+      const response = await fetch(url, {
+        method: "GET",
+        signal: controller.signal,
+      });
+
+      console.log("HTTP Status:", response.status);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      // 3?? Validate JSON
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      if (!data || typeof data !== "object") {
+        throw new Error("Invalid JSON response");
+      }
+
+      if (data.ok) {
+        setDbStatus({
+          state: "ok",
+          message: `Connected (createdId: ${data.createdId || "N/A"})`,
+        });
+      } else {
+        throw new Error("API responded but ok=false");
+      }
+
+    } catch (error) {
+      if (error.name === "AbortError") return;
+
+      console.error("DB Test Error:", error);
+
+      setDbStatus({
+        state: "error",
+        message: error.message || "Connection failed",
+      });
+    }
+  };
+
+  checkConnection();
+
+  // Cleanup to prevent memory leaks
+  return () => controller.abort();
+}, []);
   const metrics = useMemo(
     () => [
       { title: "Total sessions", value: "76", changePct: -3, prevLabel: "78 prev. 30d" },
@@ -73,31 +155,55 @@ export default function Dashboard() {
 
   return (
     <div className="dash">
-      {/* Top header */}
+      {/* Header */}
       <header className="dashTop">
         <div className="dashTop__left">
           <div className="crumb">
             <span className="crumb__dot" />
-            <span className="crumb__text">Answers / Analytics</span>
+            <span className="crumb__text">
+              Answers / Analytics
+            </span>
           </div>
         </div>
 
         <div className="dashTop__right">
           <button className="btn btn--ghost">Pricing</button>
           <button className="btn btn--primary">Add funds</button>
+
           <div className="balance">
             <div className="balance__label">Balance</div>
-            <div className="balance__value">€0.00</div>
+            <div className="balance__value">�0.00</div>
           </div>
         </div>
       </header>
+
+      {/* Demo Banner */}
+      <div className="demo-banner">
+        <strong>Demo page:</strong> This dashboard is a UI
+        prototype for SEBVM chatbot matrices. Final metrics,
+        layout, and features may change.
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 12,
+            opacity: 0.9,
+          }}
+        >
+          <strong>Connection:</strong>{" "}
+          {dbStatus.state === "loading" && "Checking API + Mongo..."}
+          {dbStatus.state === "ok" && dbStatus.message}
+          {dbStatus.state === "error" && `Error: ${dbStatus.message}`}
+        </div>
+      </div>
 
       {/* Tabs */}
       <nav className="tabs">
         {TABS.map((t) => (
           <button
             key={t}
-            className={`tab ${activeTab === t ? "tab--active" : ""}`}
+            className={`tab ${
+              activeTab === t ? "tab--active" : ""
+            }`}
             onClick={() => setActiveTab(t)}
             type="button"
           >
@@ -106,12 +212,20 @@ export default function Dashboard() {
         ))}
       </nav>
 
-      {/* Filters + Demo banner */}
+      {/* Filters */}
       <section className="toolbar">
         <div className="filters">
           <div className="filter">
-            <div className="filter__label">Date range</div>
-            <select className="filter__control" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>
+            <div className="filter__label">
+              Date range
+            </div>
+            <select
+              className="filter__control"
+              value={dateRange}
+              onChange={(e) =>
+                setDateRange(e.target.value)
+              }
+            >
               <option>Last 7 days</option>
               <option>Last 30 days</option>
               <option>Last 90 days</option>
@@ -120,8 +234,16 @@ export default function Dashboard() {
           </div>
 
           <div className="filter">
-            <div className="filter__label">ChatBot Name</div>
-            <select className="filter__control" value={bot} onChange={(e) => setBot(e.target.value)}>
+            <div className="filter__label">
+              Chatbot name
+            </div>
+            <select
+              className="filter__control"
+              value={bot}
+              onChange={(e) =>
+                setBot(e.target.value)
+              }
+            >
               <option>All</option>
               <option>Imani (SEB)</option>
               <option>FDG SMS Assistant</option>
@@ -129,34 +251,32 @@ export default function Dashboard() {
             </select>
           </div>
         </div>
-
-        <div className="demoBanner" role="note">
-          <strong>Demo page:</strong> This dashboard is a UI prototype for SEBVM chatbot matrices. Final metrics, layout,
-          and features may change.
-        </div>
       </section>
 
-      {/* Content */}
+      {/* Main Content */}
       <main className="dashMain">
         <h2 className="sectionTitle">Summary</h2>
-        <p className="sectionHint">Key performance indicators on how your chatbots are performing.</p>
+        <p className="sectionHint">
+          Key performance indicators on how your chatbots
+          are performing.
+        </p>
 
         <div className="kpiGrid">
           {metrics.map((m) => (
-            <KpiCard
-              key={m.title}
-              title={m.title}
-              value={m.value}
-              changePct={m.changePct}
-              prevLabel={m.prevLabel}
-            />
+            <KpiCard key={m.title} {...m} />
           ))}
         </div>
 
-        <h2 className="sectionTitle" style={{ marginTop: 18 }}>
+        <h2
+          className="sectionTitle"
+          style={{ marginTop: 18 }}
+        >
           Sessions overview
         </h2>
-        <p className="sectionHint">Number of sessions over time and how they ended.</p>
+
+        <p className="sectionHint">
+          Number of sessions over time and how they ended.
+        </p>
 
         <div className="panelGrid">
           <Panel
@@ -164,6 +284,7 @@ export default function Dashboard() {
             subtitle="Trend of all sessions vs engaged sessions"
             right={<span className="pill">Demo</span>}
           />
+
           <Panel
             title="Number of sessions by how they ended"
             subtitle="Contained / escalated / dropped"

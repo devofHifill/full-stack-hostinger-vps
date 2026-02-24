@@ -1,30 +1,50 @@
 services:
+  mongodb:
+    image: mongo:7
+    container_name: sebvm-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpass
+      MONGO_INITDB_DATABASE: sebvm
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - fullstack-net
 
   server:
     build: ./server
     container_name: express-server
+    restart: unless-stopped
     ports:
       - "4000:4000"
     environment:
       - PORT=4000
       - CORS_ORIGINS=http://localhost:5173,http://localhost:5174,http://localhost:3000,http://76.13.242.148:5174
+      - MONGO_URI=mongodb://root:rootpass@mongodb:27017/sebvm?authSource=admin
+    depends_on:
+      - mongodb
     networks:
       - fullstack-net
-    restart: unless-stopped
 
   client:
     build: ./client
     container_name: react-client
+    restart: unless-stopped
     ports:
       - "5174:3000"
     environment:
       - VITE_API_URL=http://76.13.242.148:4000
-    networks:
-      - fullstack-net
     depends_on:
       - server
-    restart: unless-stopped
+    networks:
+      - fullstack-net
 
 networks:
   fullstack-net:
     driver: bridge
+
+volumes:
+  mongo_data:

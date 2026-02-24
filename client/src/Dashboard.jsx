@@ -172,7 +172,7 @@ useEffect(() => {
 
           <div className="balance">
             <div className="balance__label">Balance</div>
-            <div className="balance__value">€0.00</div>
+            <div className="balance__value">â‚¬0.00</div>
           </div>
         </div>
       </header>

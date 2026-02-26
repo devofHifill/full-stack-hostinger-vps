@@ -1,0 +1,266 @@
+/* ============================= */
+/* SEBVM - SEB Mortgage Theme   */
+/* ============================= */
+
+/* -------- Brand Variables -------- */
+
+:root {
+  --brand-primary: #8E44AD;      /* Purple */
+  --brand-accent: #F39C12;       /* Orange */
+  --bg-light: #f5f7fb;
+  --bg-white: #ffffff;
+  --border-light: #e5e7eb;
+  --text-dark: #1f2937;
+  --text-muted: #6b7280;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning-bg: #fff7ed;
+  --warning-border: #fed7aa;
+}
+
+/* -------- Reset -------- */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  background: var(--bg-light);
+  color: var(--text-dark);
+}
+
+/* -------- Layout -------- */
+
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* ============================= */
+/* Sidebar */
+/* ============================= */
+
+.sidebar {
+  width: 260px;
+  background: var(--bg-white);
+  border-right: 1px solid var(--border-light);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--brand-primary);
+  margin-bottom: 30px;
+}
+
+.org {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.search input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  outline: none;
+}
+
+.search input:focus {
+  border-color: var(--brand-primary);
+}
+
+/* Navigation */
+
+.nav-item {
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  background: #fff7ed;
+  color: var(--brand-accent);
+}
+
+.nav-item.active {
+  background: #f3e8ff;
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
+/* ============================= */
+/* Main Content */
+/* ============================= */
+
+.main {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+}
+
+/* Header */
+
+.header h1 {
+  font-size: 26px;
+  margin-bottom: 6px;
+  color: var(--brand-primary);
+}
+
+.header p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Demo Banner */
+
+.demo-banner {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  padding: 12px 14px;
+  border-radius: 6px;
+  margin: 20px 0;
+  font-size: 13px;
+  color: #92400e;
+}
+
+/* ============================= */
+/* Filters */
+/* ============================= */
+
+.filters {
+  margin-bottom: 18px;
+}
+
+.filter-btn {
+  background: var(--brand-primary);
+  border: none;
+  padding: 9px 16px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.filter-btn:hover {
+  opacity: 0.9;
+}
+
+.filter-btn span {
+  background: var(--brand-accent);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 14px;
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ============================= */
+/* Table */
+/* ============================= */
+
+.table-wrapper {
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #f3f4f6;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+th, td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+}
+
+tbody tr:hover {
+  background: #f9fafb;
+}
+
+.call-id {
+  font-family: monospace;
+  color: var(--text-dark);
+}
+
+/* ============================= */
+/* Badges */
+/* ============================= */
+
+.badge {
+  padding: 5px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* Call Type */
+
+.outbound {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+/* Ended Reasons */
+
+.voicemail {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.failed {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.ended {
+  background: #dcfce7;
+  color: var(--success);
+}
+
+/* Success Evaluation */
+
+.fail {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+/* ============================= */
+/* Scrollbar (Optional Upgrade) */
+/* ============================= */
+
+.main::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}

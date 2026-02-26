@@ -275,3 +275,73 @@
   padding: 6px 10px;
   border-radius: 999px;
 }
+
+/*////////////////////////card css ////////////////////////////////////*/
+.dashboard {
+  padding: 24px;
+  font-family: Arial, sans-serif;
+}
+
+.dashboard__header {
+  margin-bottom: 24px;
+}
+
+.demo-banner {
+  margin-top: 10px;
+  padding: 10px;
+  background: #fff4e5;
+  border-left: 4px solid orange;
+  font-size: 14px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.kpi {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.kpi__title {
+  font-size: 14px;
+  color: #777;
+}
+
+.kpi__value {
+  font-size: 26px;
+  font-weight: bold;
+  margin-top: 6px;
+}
+
+.panel {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.calls-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.calls-table th,
+.calls-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.calls-table th {
+  background: #f9f9f9;
+}
+
+.calls-table tr:hover {
+  background: #f5f5f5;
+}

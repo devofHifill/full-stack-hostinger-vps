@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 
 // Health route
 app.get("/", (req, res) => {
-  res.send("API running 🚀");
+  res.send("API running now!!!!");
 });
 
 // Test route

@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./db.js";
+import webhookRoutes from "./routes/webhook.js";
+app.use("/api/webhook", webhookRoutes);
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -32,7 +34,7 @@ app.use((req, res, next) => {
 
 // Health route
 app.get("/", (req, res) => {
-  res.send("API running now!!!!");
+  res.send("API running now3333");
 });
 
 // Test route

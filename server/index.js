@@ -1,10 +1,11 @@
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./db.js";
+import callsRoutes from "./routes/calls.js";
 import webhookRoutes from "./routes/webhook.js";
-app.use("/api/webhook", webhookRoutes);
 
-const app = express();
+
+const app = express();   // 👈 MUST be before app.use()
 const PORT = process.env.PORT || 4000;
 
 // Middleware
@@ -26,23 +27,27 @@ app.use(
   })
 );
 
-// Request logging
+// Logging
 app.use((req, res, next) => {
   console.log(req.method, req.url);
   next();
 });
 
+// 👇 Register routes AFTER app exists
+app.use("/api/webhook", webhookRoutes);
+app.use("/api/calls", callsRoutes);
+
+
 // Health route
 app.get("/", (req, res) => {
-  res.send("API running now3333");
+  res.send("API running 🚀");
 });
 
-// Test route
 app.get("/api/message", (req, res) => {
   res.json({ message: "Hello from FDG" });
 });
 
-// Start server AFTER DB connection
+// Start server AFTER DB connect
 connectDB()
   .then(() => {
     app.listen(PORT, () => {

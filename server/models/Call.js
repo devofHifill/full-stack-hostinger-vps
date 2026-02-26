@@ -1,31 +1,51 @@
 import mongoose from "mongoose";
 
-const CallSchema = new mongoose.Schema(
+const callSchema = new mongoose.Schema(
   {
-    // Who / Where
-    loanOfficerId: { type: String, index: true, default: null },
-    assistant: { type: String, index: true, default: "vapi" },
+    callId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
 
-    // Call identifiers
-    externalCallId: { type: String, index: true, unique: true, sparse: true },
-    phoneFrom: { type: String, index: true, default: null },
-    phoneTo: { type: String, default: null },
+    callSid: String,
 
-    // Timing / outcome
-    startedAt: { type: Date, index: true, default: null },
-    endedAt: { type: Date, default: null },
-    durationSec: { type: Number, index: true, default: 0 },
-    outcome: { type: String, index: true, default: "unknown" }, // booked / no_answer / hangup / etc.
+    assistantId: String,
+    phoneNumberId: String,
 
-    // Content
-    transcript: { type: String, default: "" },
-    summary: { type: String, default: "" },
-    recordingUrl: { type: String, default: "" },
+    direction: {
+      type: String,
+      enum: ["inbound", "outbound"],
+    },
 
-    // Raw payload for replay/debug
-    raw: { type: mongoose.Schema.Types.Mixed, required: true },
+    status: String,
+    endedReason: String,
+
+    normalizedOutcome: {
+      type: String,
+      enum: ["completed", "no-answer", "failed", "unknown"],
+    },
+
+    durationSeconds: Number,
+    cost: Number,
+
+    customer: {
+      name: String,
+      phone: String,
+      email: String,
+    },
+
+    transcript: String,
+    summary: String,
+
+    recordingUrl: String,
+
+    startedAt: Date,
+    endedAt: Date,
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Call", CallSchema);
+callSchema.index({ startedAt: -1 });
+
+export default mongoose.model("Call", callSchema);

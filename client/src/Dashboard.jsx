@@ -11,118 +11,125 @@ function KpiCard({ title, value }) {
 }
 
 export default function Dashboard() {
-  const base = import.meta.env.VITE_API_URL;
-
   const [stats, setStats] = useState(null);
   const [calls, setCalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const base = import.meta.env.VITE_API_URL;
+
     if (!base) {
-      setError("VITE_API_URL is not defined");
-      setLoading(false);
+      setError("VITE_API_URL not defined");
       return;
     }
 
-    const fetchData = async () => {
+    async function fetchData() {
       try {
         setLoading(true);
 
-        const [statsRes, callsRes] = await Promise.all([
-          fetch(`${base}/api/calls/stats`),
-          fetch(`${base}/api/calls`)
-        ]);
-
+        const statsRes = await fetch(`${base}/api/calls/stats`);
         if (!statsRes.ok) throw new Error("Failed to fetch stats");
-        if (!callsRes.ok) throw new Error("Failed to fetch calls");
-
         const statsData = await statsRes.json();
+
+        const callsRes = await fetch(`${base}/api/calls`);
+        if (!callsRes.ok) throw new Error("Failed to fetch calls");
         const callsData = await callsRes.json();
 
         setStats(statsData);
         setCalls(callsData);
-        setError(null);
       } catch (err) {
         console.error(err);
-        setError(err.message);
+        setError("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchData();
-  }, [base]);
+  }, []);
 
   return (
     <div className="dashboard">
-      <header className="dashboard__header">
-        <h1>SEBVM – Call Monitoring Dashboard</h1>
-        <div className="demo-banner">
-          Demo page: This dashboard reflects live backend data. Final metrics,
-          layout and advanced analytics may evolve.
-        </div>
-      </header>
+      <h1>SEBVM Dashboard</h1>
 
-      {loading && <p>Loading live data...</p>}
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
+      <div className="demo-banner">
+        Demo Page: This dashboard is connected to live backend data.
+        Final metrics and layout may change.
+      </div>
 
-      {!loading && !error && (
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {loading ? (
+        <p>Loading dashboard...</p>
+      ) : (
         <>
-          {/* KPI SECTION */}
+          {/* KPI Section */}
           <div className="kpi-grid">
             <KpiCard
               title="Total Calls"
-              value={stats?.totalCalls ?? 0}
+              value={stats?.totalCalls || 0}
             />
             <KpiCard
-              title="Connected Calls"
-              value={stats?.connectedCalls ?? 0}
+              title="Completed"
+              value={stats?.completed || 0}
             />
             <KpiCard
-              title="Missed Calls"
-              value={stats?.missedCalls ?? 0}
+              title="No Answer"
+              value={stats?.noAnswer || 0}
+            />
+            <KpiCard
+              title="Failed"
+              value={stats?.failed || 0}
             />
             <KpiCard
               title="Avg Duration (sec)"
-              value={stats?.avgDuration ?? 0}
+              value={Math.round(stats?.avgDuration || 0)}
+            />
+            <KpiCard
+              title="Total Cost"
+              value={`$${(stats?.totalCost || 0).toFixed(2)}`}
             />
           </div>
 
-          {/* CALLS TABLE */}
-          <div className="panel">
+          {/* Calls Table */}
+          <div className="calls-section">
             <h2>Recent Calls</h2>
 
-            <table className="calls-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Caller</th>
-                  <th>Duration</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {calls.length === 0 ? (
+            {calls.length === 0 ? (
+              <p>No calls found.</p>
+            ) : (
+              <table className="calls-table">
+                <thead>
                   <tr>
-                    <td colSpan="4">No call records found</td>
+                    <th>Call ID</th>
+                    <th>Customer</th>
+                    <th>Direction</th>
+                    <th>Outcome</th>
+                    <th>Duration</th>
+                    <th>Cost</th>
+                    <th>Date</th>
                   </tr>
-                ) : (
-                  calls.map((call) => (
+                </thead>
+                <tbody>
+                  {calls.map((call) => (
                     <tr key={call._id}>
+                      <td>{call.callId}</td>
+                      <td>{call.customer?.name || "-"}</td>
+                      <td>{call.direction}</td>
+                      <td>{call.normalizedOutcome}</td>
+                      <td>{call.durationSeconds}s</td>
+                      <td>${call.cost}</td>
                       <td>
-                        {call.createdAt
-                          ? new Date(call.createdAt).toLocaleString()
+                        {call.startedAt
+                          ? new Date(call.startedAt).toLocaleString()
                           : "-"}
                       </td>
-                      <td>{call.caller || "-"}</td>
-                      <td>{call.duration ? `${call.duration}s` : "0s"}</td>
-                      <td>{call.status || "-"}</td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </>
       )}

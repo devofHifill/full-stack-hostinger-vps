@@ -1,0 +1,16 @@
+{
+  "id": "{{ $('Vapi Response Webhook').item.json.body.message.call.id }}",
+  "type": "{{ $json.body.message.call.type }}",
+  "status": "ended",
+  "endedReason": "{{ $json.body.message.endedReason }}",
+  "cost": 0.12,
+  "startedAt": "{{ $json.body.message.startedAt }}",
+  "endedAt": "{{ $json.body.message.endedAt }}",
+  "customer": {
+    "name": "{{ $json.body.message.artifact.variables.customer.number }}",
+    "number": "{{ $json.body.message.artifact.variables.customer.number }}",
+    "email": "{{ $json.body.message.artifact.variables.customer.email }}"
+  },
+  "transcript": "Hello this is a test call.",
+  "summary": "No response from customer."
+}

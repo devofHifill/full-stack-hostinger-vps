@@ -1,42 +1,54 @@
+import { useEffect, useState } from "react";
 import "./CallLogsDashboard.css";
 
-const rows = [
-  {
-    id: "019c91e0...",
-    assistant: "Imani (Outbound)",
-    assistantPhone: "+1 (276) 398 6644",
-    customerPhone: "+1 (757) 632 3237",
-    type: "Outbound",
-    reason: "Voicemail",
-    success: "Fail",
-    start: "25 Feb 2026, 04:29",
-    duration: "21s",
-  },
-  {
-    id: "019c91dd...",
-    assistant: "Imani (Outbound)",
-    assistantPhone: "+1 (276) 398 6644",
-    customerPhone: "+1 (757) 630 6922",
-    type: "Outbound",
-    reason: "Twilio Connection Failed",
-    success: "-",
-    start: "N/A",
-    duration: "-",
-  },
-  {
-    id: "019c91da...",
-    assistant: "Imani (Outbound)",
-    assistantPhone: "+1 (276) 398 6644",
-    customerPhone: "+1 (757) 630 4547",
-    type: "Outbound",
-    reason: "Customer Ended Call",
-    success: "Fail",
-    start: "25 Feb 2026, 04:22",
-    duration: "9s",
-  },
-];
-
 export default function CallLogsDashboard() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCalls() {
+      try {
+        const res = await fetch("http://76.13.242.148:4000/api/calls");
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        const mapped = data.map((call) => ({
+          id: call.callId,
+          assistant: "Imani (Outbound)",
+          assistantPhone: "-",
+          customerPhone: call.customer?.phone || "-",
+          type: call.direction === "outbound" ? "Outbound" : "Inbound",
+          reason: call.endedReason || "-",
+          success:
+            call.normalizedOutcome === "completed"
+              ? "Success"
+              : call.normalizedOutcome === "failed"
+                ? "Fail"
+                : call.normalizedOutcome === "no-answer"
+                  ? "No Answer"
+                  : "-",
+          start: call.startedAt
+            ? new Date(call.startedAt).toLocaleString()
+            : "N/A",
+          duration: call.durationSeconds
+            ? `${call.durationSeconds}s`
+            : "-",
+        }));
+
+        setRows(mapped);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);   // 🔥 THIS WAS MISSING
+      }
+    }
+
+    fetchCalls();
+  }, []);
   return (
     <div className="layout">
       {/* Sidebar */}
@@ -67,59 +79,71 @@ export default function CallLogsDashboard() {
         </div>
 
         <div className="demo-banner">
-          Demo Page: This dashboard is a UI prototype. Final features and metrics may change.
+          Demo Page: This dashboard is connected to live backend data.
+          Final features and metrics may change.
         </div>
 
         <div className="filters">
           <button className="filter-btn">
-            ☰ All Calls <span>200</span>
+            ☰ All Calls <span>{rows.length}</span>
           </button>
         </div>
 
         <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>CALL ID</th>
-                <th>ASSISTANT / SQUAD</th>
-                <th>ASSISTANT PHONE</th>
-                <th>CUSTOMER PHONE</th>
-                <th>TYPE</th>
-                <th>ENDED REASON</th>
-                <th>SUCCESS</th>
-                <th>START TIME</th>
-                <th>DURATION</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {rows.map((row, i) => (
-                <tr key={i}>
-                  <td className="call-id">{row.id}</td>
-                  <td>{row.assistant}</td>
-                  <td>{row.assistantPhone}</td>
-                  <td>{row.customerPhone}</td>
-                  <td>
-                    <span className="badge outbound">
-                      ☎ {row.type}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge reason ${getReasonClass(row.reason)}`}>
-                      {row.reason}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${row.success === "Fail" ? "fail" : ""}`}>
-                      {row.success}
-                    </span>
-                  </td>
-                  <td>{row.start}</td>
-                  <td>{row.duration}</td>
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>CALL ID</th>
+                  <th>ASSISTANT / SQUAD</th>
+                  <th>ASSISTANT PHONE</th>
+                  <th>CUSTOMER PHONE</th>
+                  <th>TYPE</th>
+                  <th>ENDED REASON</th>
+                  <th>SUCCESS</th>
+                  <th>START TIME</th>
+                  <th>DURATION</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {rows.map((row, i) => (
+                  <tr key={i}>
+                    <td className="call-id">{row.id}</td>
+                    <td>{row.assistant}</td>
+                    <td>{row.assistantPhone}</td>
+                    <td>{row.customerPhone}</td>
+                    <td>
+                      <span className="badge outbound">
+                        ☎ {row.type}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge reason ${getReasonClass(
+                          row.reason
+                        )}`}
+                      >
+                        {row.reason}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${row.success === "Fail" ? "fail" : ""
+                          }`}
+                      >
+                        {row.success}
+                      </span>
+                    </td>
+                    <td>{row.start}</td>
+                    <td>{row.duration}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </main>
     </div>
@@ -127,8 +151,10 @@ export default function CallLogsDashboard() {
 }
 
 function getReasonClass(reason) {
-  if (reason.includes("Voicemail")) return "voicemail";
+  if (!reason) return "";
+  if (reason.includes("voicemail")) return "voicemail";
   if (reason.includes("Failed")) return "failed";
   if (reason.includes("Ended")) return "ended";
+  if (reason.includes("silence")) return "voicemail";
   return "";
 }

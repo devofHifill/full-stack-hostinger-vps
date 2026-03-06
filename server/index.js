@@ -1,8 +1,14 @@
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./db.js";
+
+import ChatSession from "./models/ChatSession.js";
+import ChatMessage from "./models/ChatMessage.js";
+import ChatLead from "./models/ChatLead.js";
+
 import callsRoutes from "./routes/calls.js";
 import webhookRoutes from "./routes/webhook.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 
 const app = express();   // 👈 MUST be before app.use()
@@ -36,6 +42,8 @@ app.use((req, res, next) => {
 // 👇 Register routes AFTER app exists
 app.use("/api/webhook", webhookRoutes);
 app.use("/api/calls", callsRoutes);
+app.use("/api/chat", chatRoutes);
+
 
 
 // Health route

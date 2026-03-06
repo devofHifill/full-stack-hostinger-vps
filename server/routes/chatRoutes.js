@@ -1,0 +1,220 @@
+import express from "express";
+
+import ChatSession from "../models/ChatSession.js";
+import ChatMessage from "../models/ChatMessage.js";
+import ChatLead from "../models/ChatLead.js";
+
+const router = express.Router();
+
+
+
+/*
+START CHAT SESSION
+*/
+router.post("/session/start", async (req, res) => {
+
+  try {
+
+    const { sessionId, name, phone, email } = req.body;
+
+    let session = await ChatSession.findOne({ sessionId });
+
+    if (!session) {
+
+      session = await ChatSession.create({
+        sessionId,
+        visitor: {
+          name,
+          phone,
+          email
+        }
+      });
+
+    }
+
+    res.json({
+      success: true,
+      session
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: "Failed to start session"
+    });
+
+  }
+
+});
+
+
+
+/*
+SAVE MESSAGE
+*/
+router.post("/message", async (req, res) => {
+
+  try {
+
+    const { sessionId, role, message } = req.body;
+
+    const msg = await ChatMessage.create({
+      sessionId,
+      role,
+      message
+    });
+
+    await ChatSession.updateOne(
+      { sessionId },
+      {
+        $inc: { "metrics.messageCount": 1 }
+      }
+    );
+
+    res.json({
+      success: true,
+      msg
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: "Failed to save message"
+    });
+
+  }
+
+});
+
+
+
+/*
+GET ALL CHAT SESSIONS
+*/
+router.get("/sessions", async (req, res) => {
+
+  try {
+
+    const sessions = await ChatSession
+      .find()
+      .sort({ updatedAt: -1 })
+      .limit(100);
+
+    res.json(sessions);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: "Failed to fetch sessions"
+    });
+
+  }
+
+});
+
+
+
+/*
+GET CHAT HISTORY
+*/
+router.get("/:sessionId", async (req, res) => {
+
+  try {
+
+    const messages = await ChatMessage
+      .find({ sessionId: req.params.sessionId })
+      .sort({ timestamp: 1 });
+
+    res.json(messages);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: "Failed to fetch messages"
+    });
+
+  }
+
+});
+
+
+
+/*
+CREATE / UPDATE LEAD
+*/
+router.post("/lead", async (req, res) => {
+
+  try {
+
+    const {
+      sessionId,
+      name,
+      phone,
+      email,
+      loan_goal,
+      refi_objective,
+      buying_priority,
+      appointmentTime
+    } = req.body;
+
+    let lead = await ChatLead.findOne({ sessionId });
+
+    if (!lead) {
+
+      lead = await ChatLead.create({
+        sessionId,
+        name,
+        phone,
+        email,
+        loan_goal,
+        refi_objective,
+        buying_priority,
+        appointmentTime,
+        status: "qualified"
+      });
+
+    } else {
+
+      lead = await ChatLead.findOneAndUpdate(
+        { sessionId },
+        {
+          name,
+          phone,
+          email,
+          loan_goal,
+          refi_objective,
+          buying_priority,
+          appointmentTime
+        },
+        { new: true }
+      );
+
+    }
+
+    res.json({
+      success: true,
+      lead
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: "Failed to store lead"
+    });
+
+  }
+
+});
+
+
+export default router;

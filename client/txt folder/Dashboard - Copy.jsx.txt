@@ -1,0 +1,73 @@
+import { useEffect, useState } from "react";
+import "./Dashboard.css";
+import SideNav from "./SideNav";
+import ChatLogsDashboard from "./ChatLogsDashboard";
+import CallLogsDashboard from "./CallLogsDashboard";
+
+
+export default function Dashboard() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState("calls");
+
+  useEffect(() => {
+    async function fetchCalls() {
+      try {
+        const res = await fetch("http://76.13.242.148:4000/api/calls");
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        const mapped = data.map((call) => ({
+          id: call.callId,
+          assistant: "Imani (Outbound)",
+          assistantPhone: "-",
+          customerPhone: call.customer?.phone || "-",
+          type: call.direction === "outbound" ? "Outbound" : "Inbound",
+          reason: call.endedReason || "-",
+          success:
+            call.normalizedOutcome === "completed"
+              ? "Success"
+              : call.normalizedOutcome === "failed"
+                ? "Fail"
+                : call.normalizedOutcome === "no-answer"
+                  ? "No Answer"
+                  : "-",
+          start: call.startedAt
+            ? new Date(call.startedAt).toLocaleString()
+            : "N/A",
+          duration: call.durationSeconds
+            ? `${call.durationSeconds}s`
+            : "-",
+        }));
+
+        setRows(mapped);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);   // 🔥 THIS WAS MISSING
+      }
+    }
+
+    fetchCalls();
+  }, []);
+  return (
+    <div className="layout">
+      {/* Sidebar */}
+         <SideNav view={view} setView={setView} />
+
+      {/* Main Content */}
+      <main className="main">
+
+        {view === "calls" && <CallLogsDashboard />}
+
+        {view === "chat" && <ChatLogsDashboard />}
+
+      </main>
+    </div>
+  );
+}
+

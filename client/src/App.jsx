@@ -1,6 +1,4 @@
-import Dashboard from "./Dashboard";
-import CallLogsDashboard from "./CallLogsDashboard";
-
+import CallLogsDashboard from "./components/CallLogsDashboard";
 import "./App.css";
 
 export default function App() {

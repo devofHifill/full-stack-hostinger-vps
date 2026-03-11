@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import "./CallLogsDashboard.css";
 import ChatLogsDashboard from "./ChatLogsDashboard";
+import CallDetailsModal from "./CallDetailsModal";
 
 export default function CallLogsDashboard() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState("calls");
+  const [selectedCallId, setSelectedCallId] = useState(null);
 
   useEffect(() => {
     async function fetchCalls() {
@@ -29,10 +31,10 @@ export default function CallLogsDashboard() {
             call.normalizedOutcome === "completed"
               ? "Success"
               : call.normalizedOutcome === "failed"
-                ? "Fail"
-                : call.normalizedOutcome === "no-answer"
-                  ? "No Answer"
-                  : "-",
+              ? "Fail"
+              : call.normalizedOutcome === "no-answer"
+              ? "No Answer"
+              : "-",
           start: call.startedAt
             ? new Date(call.startedAt).toLocaleString()
             : "N/A",
@@ -45,14 +47,16 @@ export default function CallLogsDashboard() {
       } catch (err) {
         console.error("Fetch error:", err);
       } finally {
-        setLoading(false);   // 🔥 THIS WAS MISSING
+        setLoading(false);
       }
     }
 
     fetchCalls();
   }, []);
+
   return (
     <div className="layout">
+
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="logo">LOGO</div>
@@ -77,18 +81,16 @@ export default function CallLogsDashboard() {
           >
             Chat Logs
           </div>
+
           <div className="nav-item">File Upload</div>
           <div className="nav-item">Structured Outputs</div>
         </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* Main */}
       <main className="main">
 
-        {/* ============================= */}
-        {/* CALL LOGS VIEW (EXISTING UI) */}
-        {/* ============================= */}
-
+        {/* CALL LOGS */}
         {view === "calls" && (
           <>
             <div className="header">
@@ -129,8 +131,12 @@ export default function CallLogsDashboard() {
                   </thead>
 
                   <tbody>
-                    {rows.map((row, i) => (
-                      <tr key={i}>
+                    {rows.map((row) => (
+                      <tr
+                        key={row.id}
+                        onClick={() => setSelectedCallId(row.id)}
+                        style={{ cursor: "pointer" }}
+                      >
                         <td className="call-id">{row.id}</td>
                         <td>{row.assistant}</td>
                         <td>{row.assistantPhone}</td>
@@ -144,9 +150,7 @@ export default function CallLogsDashboard() {
 
                         <td>
                           <span
-                            className={`badge reason ${getReasonClass(
-                              row.reason
-                            )}`}
+                            className={`badge reason ${getReasonClass(row.reason)}`}
                           >
                             {row.reason}
                           </span>
@@ -154,8 +158,7 @@ export default function CallLogsDashboard() {
 
                         <td>
                           <span
-                            className={`badge ${row.success === "Fail" ? "fail" : ""
-                              }`}
+                            className={`badge ${row.success === "Fail" ? "fail" : ""}`}
                           >
                             {row.success}
                           </span>
@@ -172,16 +175,18 @@ export default function CallLogsDashboard() {
           </>
         )}
 
-
-
-        {/* ============================= */}
-        {/* CHAT LOGS VIEW */}
-        {/* ============================= */}
-
+        {/* CHAT LOGS */}
         {view === "chat" && (
           <ChatLogsDashboard />
         )}
 
+        {/* MODAL */}
+        {selectedCallId && (
+          <CallDetailsModal
+            callId={selectedCallId}
+            onClose={() => setSelectedCallId(null)}
+          />
+        )}
 
       </main>
     </div>
@@ -190,9 +195,13 @@ export default function CallLogsDashboard() {
 
 function getReasonClass(reason) {
   if (!reason) return "";
-  if (reason.includes("voicemail")) return "voicemail";
-  if (reason.includes("Failed")) return "failed";
-  if (reason.includes("Ended")) return "ended";
-  if (reason.includes("silence")) return "voicemail";
+
+  const r = reason.toLowerCase();
+
+  if (r.includes("voicemail")) return "voicemail";
+  if (r.includes("failed")) return "failed";
+  if (r.includes("ended")) return "ended";
+  if (r.includes("silence")) return "voicemail";
+
   return "";
 }

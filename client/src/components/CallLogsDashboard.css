@@ -264,3 +264,43 @@ tbody tr:hover {
   background: #d1d5db;
   border-radius: 4px;
 }
+
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modalBox {
+  background: #fff;
+  width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalSection {
+  margin-top: 20px;
+}
+
+.transcriptBox {
+  background: #f5f5f5;
+  padding: 10px;
+  white-space: pre-wrap;
+  border-radius: 4px;
+}

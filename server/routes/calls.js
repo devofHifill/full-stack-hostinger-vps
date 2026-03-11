@@ -51,4 +51,26 @@ router.get("/stats", async (req, res) => {
   }
 });
 
+
+
+/*
+GET single call details
+/api/calls/:callId
+*/
+router.get("/:callId", async (req, res) => {
+  try {
+    const call = await Call.findOne({ callId: req.params.callId });
+
+    if (!call) {
+      return res.status(404).json({ error: "Call not found" });
+    }
+
+    res.json(call);
+  } catch (err) {
+    console.error("Error fetching call:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 export default router;

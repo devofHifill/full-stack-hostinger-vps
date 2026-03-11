@@ -1,0 +1,119 @@
+/* ============================= */
+/* Chat Layout */
+/* ============================= */
+
+.chatLayout{
+  display:flex;
+  height:80vh;
+  background:white;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  overflow:hidden;
+}
+
+/* ============================= */
+/* Sessions Panel */
+/* ============================= */
+
+.chatSessions{
+  width:30%;
+  border-right:1px solid #e5e7eb;
+  overflow-y:auto;
+  background:#fafafa;
+}
+
+.chatTitle{
+  padding:16px;
+  font-size:16px;
+  font-weight:600;
+}
+
+.sessionItem{
+  padding:14px 16px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+}
+
+.sessionItem:hover{
+  background:#f4f4f4;
+}
+
+.sessionItem.active{
+  background:#f3e8ff;
+}
+
+.sessionName{
+  font-weight:600;
+  font-size:14px;
+}
+
+.sessionPhone{
+  font-size:12px;
+  color:#6b7280;
+}
+
+/* ============================= */
+/* Chat Window */
+/* ============================= */
+
+.chatWindow{
+  flex:1;
+  padding:20px;
+  overflow-y:auto;
+  background:#ffffff;
+}
+
+.emptyChat{
+  color:#888;
+  text-align:center;
+  margin-top:80px;
+}
+
+/* ============================= */
+/* Messages */
+/* ============================= */
+
+.chatRow{
+  margin-bottom:16px;
+  display:flex;
+}
+
+.chatRow.user{
+  justify-content:flex-end;
+}
+
+.chatRow.bot{
+  justify-content:flex-start;
+}
+
+.chatBubble{
+  max-width:65%;
+  padding:12px 14px;
+  border-radius:10px;
+  background:#f1f5f9;
+}
+
+.chatRow.user .chatBubble{
+  background:#DCF8C6;
+}
+
+/* ============================= */
+/* Message Meta */
+/* ============================= */
+
+.chatMeta{
+  font-size:11px;
+  color:#6b7280;
+  margin-bottom:4px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.chatRole{
+  font-weight:600;
+}
+
+.chatText{
+  font-size:14px;
+  line-height:1.5;
+}

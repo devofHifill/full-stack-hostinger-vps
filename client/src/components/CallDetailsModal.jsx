@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import TranscriptViewer from "./TranscriptViewer";
+
 
 export default function CallDetailsModal({ callId, onClose }) {
   const [call, setCall] = useState(null);
@@ -69,9 +71,11 @@ export default function CallDetailsModal({ callId, onClose }) {
 
             <div className="modalSection">
               <h3>Transcript</h3>
-              <pre className="transcriptBox">
+              {/* <pre className="transcriptBox">
                 {call?.transcript || "-"}
-              </pre>
+              </pre> */}
+              <TranscriptViewer transcript={call?.transcript || "-"} />
+
             </div>
           </>
         )}

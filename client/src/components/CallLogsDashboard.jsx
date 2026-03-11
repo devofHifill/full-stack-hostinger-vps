@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./CallLogsDashboard.css";
 import ChatLogsDashboard from "./ChatLogsDashboard";
 import CallDetailsModal from "./CallDetailsModal";
+import TranscriptViewer from "./TranscriptViewer";
 
 export default function CallLogsDashboard() {
   const [rows, setRows] = useState([]);
@@ -31,10 +32,10 @@ export default function CallLogsDashboard() {
             call.normalizedOutcome === "completed"
               ? "Success"
               : call.normalizedOutcome === "failed"
-              ? "Fail"
-              : call.normalizedOutcome === "no-answer"
-              ? "No Answer"
-              : "-",
+                ? "Fail"
+                : call.normalizedOutcome === "no-answer"
+                  ? "No Answer"
+                  : "-",
           start: call.startedAt
             ? new Date(call.startedAt).toLocaleString()
             : "N/A",
@@ -81,9 +82,10 @@ export default function CallLogsDashboard() {
           >
             Chat Logs
           </div>
-
+          <div className="nav-item">Call Lead</div>
+          <div className="nav-item">Chat Lead</div>
           <div className="nav-item">File Upload</div>
-          <div className="nav-item">Structured Outputs</div>
+
         </nav>
       </aside>
 

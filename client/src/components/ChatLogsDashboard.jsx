@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import "./ChatLogsDashboard.css";
 
 export default function ChatLogsDashboard() {
 
@@ -8,12 +9,32 @@ export default function ChatLogsDashboard() {
 
   const API = "http://76.13.242.148:4000";
 
+  const messagesEndRef = useRef(null);
+
+  /* ----------------------------
+     Auto Scroll
+  -----------------------------*/
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+
+  /* ----------------------------
+     Load Sessions
+  -----------------------------*/
+
   useEffect(() => {
     fetch(`${API}/api/chat/sessions`)
       .then(res => res.json())
       .then(data => setSessions(data))
       .catch(err => console.error(err));
   }, []);
+
+
+  /* ----------------------------
+     Load Messages
+  -----------------------------*/
 
   async function loadMessages(sessionId) {
 
@@ -25,33 +46,39 @@ export default function ChatLogsDashboard() {
     setMessages(data);
   }
 
+
+  function formatTime(ts){
+    if(!ts) return "";
+    const d = new Date(ts);
+    return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  }
+
+
   return (
-    <div style={{display:"flex", height:"80vh"}}>
+
+    <div className="chatLayout">
 
       {/* LEFT PANEL */}
 
-      <div style={{
-        width:"30%",
-        borderRight:"1px solid #ddd",
-        overflowY:"auto"
-      }}>
+      <div className="chatSessions">
 
-        <h3 style={{padding:"10px"}}>Conversations</h3>
+        <h3 className="chatTitle">Conversations</h3>
 
         {sessions.map((s) => (
 
           <div
             key={s.sessionId}
             onClick={() => loadMessages(s.sessionId)}
-            style={{
-              padding:"10px",
-              borderBottom:"1px solid #eee",
-              cursor:"pointer"
-            }}
+            className={`sessionItem ${activeSession === s.sessionId ? "active" : ""}`}
           >
 
-            <strong>{s.visitor?.name || "Anonymous"}</strong>
-            <div>{s.visitor?.phone}</div>
+            <div className="sessionName">
+              {s.visitor?.name || "Anonymous"}
+            </div>
+
+            <div className="sessionPhone">
+              {s.visitor?.phone || "-"}
+            </div>
 
           </div>
 
@@ -62,27 +89,50 @@ export default function ChatLogsDashboard() {
 
       {/* RIGHT PANEL */}
 
-      <div style={{width:"70%", padding:"20px", overflowY:"auto"}}>
+      <div className="chatWindow">
 
-        {!activeSession && <p>Select a conversation</p>}
-
-        {messages.map((m,i)=>(
-          <div key={i}
-            style={{
-              textAlign: m.role === "user" ? "right":"left",
-              marginBottom:"12px"
-            }}
-          >
-            <div style={{
-              display:"inline-block",
-              padding:"10px",
-              borderRadius:"10px",
-              background: m.role==="user" ? "#DCF8C6":"#F1F0F0"
-            }}>
-              {m.message}
-            </div>
+        {!activeSession && (
+          <div className="emptyChat">
+            Select a conversation
           </div>
-        ))}
+        )}
+
+        {messages.map((m,i)=>{
+
+          const isUser = m.role === "user";
+
+          return (
+
+            <div
+              key={i}
+              className={`chatRow ${isUser ? "user" : "bot"}`}
+            >
+
+              <div className="chatBubble">
+
+                <div className="chatMeta">
+                  <span className="chatRole">
+                    {isUser ? "User" : "Bot"}
+                  </span>
+
+                  <span className="chatTime">
+                    {formatTime(m.createdAt)}
+                  </span>
+                </div>
+
+                <div className="chatText">
+                  {m.message}
+                </div>
+
+              </div>
+
+            </div>
+
+          )
+
+        })}
+
+        <div ref={messagesEndRef}></div>
 
       </div>
 

@@ -14,3 +14,9 @@
   "transcript": "Hello this is a test call.",
   "summary": "No response from customer."
 }
+
+{
+  "sessionId": "={{ $('When chat message received').item.json.sessionId }}",
+  "role": "assistant",
+  "message": "={{ ($json.output || '').toString().replace(/\\n/g,' ').replace(/\\r/g,' ').trim() }}"
+}

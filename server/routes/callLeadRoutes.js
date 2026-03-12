@@ -1,0 +1,32 @@
+import express from "express";
+import CallLead from "../models/CallLead.js";
+
+const router = express.Router();
+
+// GET /api/call-leads
+router.get("/", async (req, res) => {
+  try {
+    const leads = await CallLead.find({})
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const normalized = leads.map((lead) => ({
+      _id: lead._id,
+      name: lead.name || "",
+      phone: lead.phone || "",
+      email: lead.email || "",
+      loanGoal: lead.loan_goal || "",
+      refiObjective: lead.refi_objective || "",
+      appointmentScheduled: Boolean(lead.appointmentScheduled),
+      status: lead.status || "",
+      createdAt: lead.createdAt || null,
+    }));
+
+    res.json(normalized);
+  } catch (error) {
+    console.error("Error fetching call leads:", error);
+    res.status(500).json({ error: "Failed to fetch call leads" });
+  }
+});
+
+export default router;

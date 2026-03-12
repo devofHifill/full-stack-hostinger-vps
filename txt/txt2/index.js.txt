@@ -10,7 +10,6 @@ import callsRoutes from "./routes/calls.js";
 import webhookRoutes from "./routes/webhook.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import chatLeadRoutes from "./routes/chatLeadRoutes.js";
-import callLeadRoutes from "./routes/callLeadRoutes.js";
 
 
 
@@ -47,7 +46,6 @@ app.use("/api/webhook", webhookRoutes);
 app.use("/api/calls", callsRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/chat-leads", chatLeadRoutes);
-app.use("/api/call-leads", callLeadRoutes);
 
 
 

@@ -4,25 +4,32 @@ import Dashboard from "./components/layout/Dashboard";
 import CallLogsPage from "./components/pages/CallLogsPage";
 import ChatLogsPage from "./components/pages/ChatLogsPage";
 import ChatLeadDashboard from "./components/ChatLeadDashboard";
-import CallLeadDashboard from "./components/CallLeadDashboard";
-
 
 export default function App() {
+
   return (
+
     <BrowserRouter>
+
       <Routes>
+
         <Route element={<Dashboard />}>
-          <Route path="/" element={<Navigate to="/calls" replace />} />
+
+          <Route path="/" element={<Navigate to="/calls" />} />
 
           <Route path="/calls" element={<CallLogsPage />} />
           <Route path="/chat" element={<ChatLogsPage />} />
 
-          <Route path="/call-leads" element={<CallLeadDashboard />} />          
-          <Route path="/chat-leads" element={<ChatLeadDashboard />} />
-
+          <Route path="/call-leads" element={<ChatLeadDashboard />} />
+          <Route path="/chat-leads" element={<div>Chat Leads Page</div>} />
           <Route path="/files" element={<div>File Upload Page</div>} />
+
         </Route>
+
       </Routes>
+
     </BrowserRouter>
-  );
+
+  )
+
 }

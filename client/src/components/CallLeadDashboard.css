@@ -1,0 +1,86 @@
+.call-lead-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.call-lead-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.call-lead-header p {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.call-lead-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.call-lead-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.call-lead-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.call-lead-table thead th {
+  background: #f9fafb;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.call-lead-table tbody td {
+  padding: 14px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #111827;
+}
+
+.call-lead-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.call-lead-state {
+  padding: 30px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.call-lead-error {
+  color: #b91c1c;
+}
+
+@media (max-width: 768px) {
+  .call-lead-header h1 {
+    font-size: 22px;
+  }
+
+  .call-lead-table thead th,
+  .call-lead-table tbody td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .call-lead-card {
+    border-radius: 12px;
+  }
+}

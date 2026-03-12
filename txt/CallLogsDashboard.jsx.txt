@@ -1,0 +1,73 @@
+export default function CallLogsDashboard() {
+
+  return (
+
+    <>
+      <div className="header">
+        <h1>Call Logs</h1>
+      </div>
+
+      <div className="table-wrapper">
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>CALL ID</th>
+                <th>ASSISTANT / SQUAD</th>
+                <th>ASSISTANT PHONE</th>
+                <th>CUSTOMER PHONE</th>
+                <th>TYPE</th>
+                <th>ENDED REASON</th>
+                <th>SUCCESS</th>
+                <th>START TIME</th>
+                <th>DURATION</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {rows.map((row) => (
+                <tr
+                  key={row.id}
+                  onClick={() => setSelectedCallId(row.id)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <td className="call-id">{row.id}</td>
+                  <td>{row.assistant}</td>
+                  <td>{row.assistantPhone}</td>
+                  <td>{row.customerPhone}</td>
+
+                  <td>
+                    <span className="badge outbound">
+                      ☎ {row.type}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span
+                      className={`badge reason ${getReasonClass(row.reason)}`}
+                    >
+                      {row.reason}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span
+                      className={`badge ${row.success === "Fail" ? "fail" : ""}`}
+                    >
+                      {row.success}
+                    </span>
+                  </td>
+
+                  <td>{row.start}</td>
+                  <td>{row.duration}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </>
+  );
+}

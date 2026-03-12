@@ -254,8 +254,3 @@
 .chatText br{
   line-height:1.8;
 }
-
-/* ================================== */
-.chatLayout{
-  height:calc(100vh - 220px);
-}

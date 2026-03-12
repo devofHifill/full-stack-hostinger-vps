@@ -1,0 +1,45 @@
+.transcript-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: #F3E8FF;
+
+}
+
+.transcript-message {
+    display: flex;
+}
+
+.transcript-message.assistant {
+    justify-content: flex-start;
+}
+
+.transcript-message.user {
+    justify-content: flex-end;
+}
+
+.transcript-bubble {
+    max-width: 70%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #f4f4f4;
+}
+
+.transcript-message.user .transcript-bubble {
+    background: #7249C3;
+    color: white;
+}
+
+.transcript-role {
+    font-size: 12px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.transcript-empty {
+    color: #777;
+}

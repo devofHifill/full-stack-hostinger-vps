@@ -1,64 +1,68 @@
 import { NavLink } from "react-router-dom";
 
-export default function Sidebar() {
+export default function Sidebar({ open, closeSidebar }) {
 
   return (
 
-    <aside className="sidebar">
+    <aside className={`sidebar ${open ? "open" : ""}`}>
 
-      <div className="logo">SEBVM</div>
+      <div className="sidebar-header">
 
-      <div className="org">
-        it@sebmtg.com's Org
+        <h2 className="logo">SEBVM</h2>
+
+        <button
+          className="sidebar-close"
+          onClick={closeSidebar}
+        >
+          ✕
+        </button>
+
       </div>
 
+      <div className="org">it@sebmtg.com's Org</div>
+
       <div className="search">
-        <input placeholder="Search" />
+        <input placeholder="Search"/>
       </div>
 
       <nav>
 
         <NavLink
           to="/calls"
-          className={({ isActive }) =>
-            `nav-item ${isActive ? "active" : ""}`
-          }
+          onClick={closeSidebar}
+          className={({isActive}) => `nav-item ${isActive ? "active" : ""}`}
         >
           Call Logs
         </NavLink>
 
         <NavLink
           to="/chat"
-          className={({ isActive }) =>
-            `nav-item ${isActive ? "active" : ""}`
-          }
+          onClick={closeSidebar}
+          className={({isActive}) => `nav-item ${isActive ? "active" : ""}`}
         >
           Chat Logs
         </NavLink>
 
         <NavLink
           to="/call-leads"
-          className={({ isActive }) =>
-            `nav-item ${isActive ? "active" : ""}`
-          }
+          onClick={closeSidebar}
+          className={({isActive}) => `nav-item ${isActive ? "active" : ""}`}
         >
           Call Lead
         </NavLink>
 
         <NavLink
           to="/chat-leads"
-          className={({ isActive }) =>
-            `nav-item ${isActive ? "active" : ""}`
-          }
+          onClick={closeSidebar}
+          className={({isActive}) => `nav-item ${isActive ? "active" : ""}`}
         >
           Chat Lead
         </NavLink>
 
         <NavLink
           to="/files"
-          className={({ isActive }) =>
-            `nav-item ${isActive ? "active" : ""}`
-          }
+          onClick={closeSidebar}
+          className={({isActive}) => `nav-item ${isActive ? "active" : ""}`}
         >
           File Upload
         </NavLink>

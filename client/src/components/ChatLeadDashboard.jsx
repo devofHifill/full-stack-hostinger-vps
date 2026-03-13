@@ -10,6 +10,56 @@ function formatDate(dateString) {
   return date.toLocaleString();
 }
 
+function escapeCsvValue(value) {
+  if (value === null || value === undefined) return '""';
+  const stringValue = String(value).replace(/"/g, '""');
+  return `"${stringValue}"`;
+}
+
+function downloadCsv(filename, rows) {
+  if (!rows.length) return;
+
+  const headers = [
+    "Name",
+    "Phone",
+    "Email",
+    "Loan Goal",
+    "Refi Objective",
+    "Appointment Scheduled",
+    "Status",
+    "Created At",
+  ];
+
+  const csvLines = [
+    headers.join(","),
+    ...rows.map((lead) =>
+      [
+        escapeCsvValue(lead.name || ""),
+        escapeCsvValue(lead.phone || ""),
+        escapeCsvValue(lead.email || ""),
+        escapeCsvValue(lead.loanGoal || ""),
+        escapeCsvValue(lead.refiObjective || ""),
+        escapeCsvValue(lead.appointmentScheduled ? "Yes" : "No"),
+        escapeCsvValue(lead.status || ""),
+        escapeCsvValue(formatDate(lead.createdAt)),
+      ].join(",")
+    ),
+  ];
+
+  const csvContent = "\uFEFF" + csvLines.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = window.URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  window.URL.revokeObjectURL(url);
+}
+
 function ChatLeadDashboard() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,9 +72,7 @@ function ChatLeadDashboard() {
         setError("");
 
         const apiBase = "http://76.13.242.148:4000";
-        const url = `${apiBase}/api/chat-leads`;
-
-        const res = await fetch(url);
+        const res = await fetch(`${apiBase}/api/chat-leads`);
 
         if (!res.ok) {
           throw new Error(`Failed to fetch chat leads: ${res.status}`);
@@ -48,6 +96,10 @@ function ChatLeadDashboard() {
     fetchLeads();
   }, []);
 
+  const handleExportCsv = () => {
+    downloadCsv("chat-leads.csv", leads);
+  };
+
   return (
     <section className="chat-lead-page">
       <div className="chat-lead-header">
@@ -55,6 +107,14 @@ function ChatLeadDashboard() {
           <h1>Chat Leads</h1>
           <p>Qualified leads captured from chat sessions.</p>
         </div>
+
+        <button
+          className="lead-export-btn"
+          onClick={handleExportCsv}
+          disabled={!leads.length}
+        >
+          Export CSV
+        </button>
       </div>
 
       <div className="chat-lead-card">

@@ -10,6 +10,56 @@ function formatDate(dateString) {
   return date.toLocaleString();
 }
 
+function escapeCsvValue(value) {
+  if (value === null || value === undefined) return '""';
+  const stringValue = String(value).replace(/"/g, '""');
+  return `"${stringValue}"`;
+}
+
+function downloadCsv(filename, rows) {
+  if (!rows.length) return;
+
+  const headers = [
+    "Name",
+    "Phone",
+    "Email",
+    "Loan Goal",
+    "Refi Objective",
+    "Appointment Scheduled",
+    "Status",
+    "Created At",
+  ];
+
+  const csvLines = [
+    headers.join(","),
+    ...rows.map((lead) =>
+      [
+        escapeCsvValue(lead.name || ""),
+        escapeCsvValue(lead.phone || ""),
+        escapeCsvValue(lead.email || ""),
+        escapeCsvValue(lead.loanGoal || ""),
+        escapeCsvValue(lead.refiObjective || ""),
+        escapeCsvValue(lead.appointmentScheduled ? "Yes" : "No"),
+        escapeCsvValue(lead.status || ""),
+        escapeCsvValue(formatDate(lead.createdAt)),
+      ].join(",")
+    ),
+  ];
+
+  const csvContent = "\uFEFF" + csvLines.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = window.URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  window.URL.revokeObjectURL(url);
+}
+
 function CallLeadDashboard() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +96,10 @@ function CallLeadDashboard() {
     fetchLeads();
   }, []);
 
+  const handleExportCsv = () => {
+    downloadCsv("call-leads.csv", leads);
+  };
+
   return (
     <section className="call-lead-page">
       <div className="call-lead-header">
@@ -53,6 +107,14 @@ function CallLeadDashboard() {
           <h1>Call Leads</h1>
           <p>Qualified leads captured from call sessions.</p>
         </div>
+
+        <button
+          className="lead-export-btn"
+          onClick={handleExportCsv}
+          disabled={!leads.length}
+        >
+          Export CSV
+        </button>
       </div>
 
       <div className="call-lead-card">

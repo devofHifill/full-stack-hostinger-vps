@@ -3,22 +3,53 @@ import Call from "../models/Call.js";
 
 const router = express.Router();
 
-// GET all calls (latest first)
+/*
+GET all calls (paginated)
+GET /api/calls?page=1&limit=20
+*/
 router.get("/", async (req, res) => {
   try {
-    const calls = await Call.find()
-      .sort({ startedAt: -1 })
-      .limit(100);
 
-    res.json(calls);
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.max(parseInt(req.query.limit || "20", 10), 1);
+    const skip = (page - 1) * limit;
+
+    const totalItems = await Call.countDocuments({});
+
+    const rows = await Call.find({})
+      .sort({ startedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const totalPages = Math.ceil(totalItems / limit) || 1;
+
+    res.json({
+      items: rows,
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+
   } catch (err) {
+    console.error("Error fetching calls:", err);
     res.status(500).json({ error: "Failed to fetch calls" });
   }
 });
 
-// GET stats
+
+/*
+GET stats
+/api/calls/stats
+*/
 router.get("/stats", async (req, res) => {
   try {
+
     const stats = await Call.aggregate([
       {
         $group: {
@@ -46,19 +77,20 @@ router.get("/stats", async (req, res) => {
     ]);
 
     res.json(stats[0] || {});
+
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch stats" });
   }
 });
 
 
-
 /*
-GET single call details
+GET single call
 /api/calls/:callId
 */
 router.get("/:callId", async (req, res) => {
   try {
+
     const call = await Call.findOne({ callId: req.params.callId });
 
     if (!call) {
@@ -66,6 +98,7 @@ router.get("/:callId", async (req, res) => {
     }
 
     res.json(call);
+
   } catch (err) {
     console.error("Error fetching call:", err);
     res.status(500).json({ error: "Server error" });

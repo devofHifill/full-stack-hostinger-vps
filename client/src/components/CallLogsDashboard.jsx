@@ -8,6 +8,9 @@ export default function CallLogsDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedCallId, setSelectedCallId] = useState(null);
 
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
+
   const API = "http://76.13.242.148:4000";
 
   useEffect(() => {
@@ -16,10 +19,12 @@ export default function CallLogsDashboard() {
 
       try {
 
-        const res = await fetch(`${API}/api/calls`);
+        setLoading(true);
+
+        const res = await fetch(`${API}/api/calls?page=${page}&limit=20`);
         const data = await res.json();
 
-        const mapped = data.map((call) => ({
+        const mapped = (data.items || []).map((call) => ({
 
           id: call.callId,
 
@@ -53,6 +58,7 @@ export default function CallLogsDashboard() {
         }));
 
         setRows(mapped);
+        setPagination(data.pagination || null);
 
       } catch (err) {
 
@@ -68,11 +74,12 @@ export default function CallLogsDashboard() {
 
     fetchCalls();
 
-  }, []);
+  }, [page]);
 
   return (
 
     <>
+
       <div className="header">
         <h1>Call Logs</h1>
       </div>
@@ -80,68 +87,101 @@ export default function CallLogsDashboard() {
       <div className="table-wrapper">
 
         {loading ? (
+
           <p>Loading...</p>
+
         ) : (
 
-          <table>
+          <>
+            <table>
 
-            <thead>
-              <tr>
-                <th>CALL ID</th>
-                <th>ASSISTANT / SQUAD</th>
-                <th>ASSISTANT PHONE</th>
-                <th>CUSTOMER PHONE</th>
-                <th>TYPE</th>
-                <th>ENDED REASON</th>
-                <th>SUCCESS</th>
-                <th>START TIME</th>
-                <th>DURATION</th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              {rows.map((row) => (
-
-                <tr
-                  key={row.id}
-                  onClick={() => setSelectedCallId(row.id)}
-                  style={{ cursor: "pointer" }}
-                >
-
-                  <td className="call-id">{row.id}</td>
-                  <td>{row.assistant}</td>
-                  <td>{row.assistantPhone}</td>
-                  <td>{row.customerPhone}</td>
-
-                  <td>
-                    <span className="badge outbound">
-                      ☎ {row.type}
-                    </span>
-                  </td>
-
-                  <td>
-                    <span className={`badge ${getReasonClass(row.reason)}`}>
-                      {row.reason}
-                    </span>
-                  </td>
-
-                  <td>
-                    <span className={`badge ${row.success === "Fail" ? "fail" : ""}`}>
-                      {row.success}
-                    </span>
-                  </td>
-
-                  <td>{row.start}</td>
-                  <td>{row.duration}</td>
-
+              <thead>
+                <tr>
+                  <th>CALL ID</th>
+                  <th>ASSISTANT / SQUAD</th>
+                  <th>ASSISTANT PHONE</th>
+                  <th>CUSTOMER PHONE</th>
+                  <th>TYPE</th>
+                  <th>ENDED REASON</th>
+                  <th>SUCCESS</th>
+                  <th>START TIME</th>
+                  <th>DURATION</th>
                 </tr>
+              </thead>
 
-              ))}
+              <tbody>
 
-            </tbody>
+                {rows.map((row) => (
 
-          </table>
+                  <tr
+                    key={row.id}
+                    onClick={() => setSelectedCallId(row.id)}
+                    style={{ cursor: "pointer" }}
+                  >
+
+                    <td className="call-id">{row.id}</td>
+                    <td>{row.assistant}</td>
+                    <td>{row.assistantPhone}</td>
+                    <td>{row.customerPhone}</td>
+
+                    <td>
+                      <span className="badge outbound">
+                        ☎ {row.type}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span className={`badge ${getReasonClass(row.reason)}`}>
+                        {row.reason}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span className={`badge ${row.success === "Fail" ? "fail" : ""}`}>
+                        {row.success}
+                      </span>
+                    </td>
+
+                    <td>{row.start}</td>
+                    <td>{row.duration}</td>
+
+                  </tr>
+
+                ))}
+
+              </tbody>
+
+            </table>
+
+            {/* PAGINATION */}
+
+            {pagination && (
+
+              <div className="table-pagination">
+
+                <button
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={!pagination.hasPrevPage}
+                >
+                  Previous
+                </button>
+
+                <span>
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+
+                <button
+                  onClick={() => setPage((prev) => prev + 1)}
+                  disabled={!pagination.hasNextPage}
+                >
+                  Next
+                </button>
+
+              </div>
+
+            )}
+
+          </>
 
         )}
 
@@ -159,6 +199,7 @@ export default function CallLogsDashboard() {
       )}
 
     </>
+
   );
 
 }

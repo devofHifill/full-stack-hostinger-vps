@@ -1,18 +1,18 @@
 import express from "express";
-import CallLead from "../models/CallLead.js";
+import ChatLead from "../models/ChatLead.js";
 
 const router = express.Router();
 
-// GET /api/call-leads?page=1&limit=10
+// GET /api/chat-leads?page=1&limit=10
 router.get("/", async (req, res) => {
   try {
     const page = Math.max(parseInt(req.query.page || "1", 10), 1);
     const limit = Math.max(parseInt(req.query.limit || "10", 10), 1);
     const skip = (page - 1) * limit;
 
-    const totalItems = await CallLead.countDocuments({});
+    const totalItems = await ChatLead.countDocuments({});
 
-    const leads = await CallLead.find({})
+    const leads = await ChatLead.find({})
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -20,6 +20,7 @@ router.get("/", async (req, res) => {
 
     const items = leads.map((lead) => ({
       _id: lead._id,
+      sessionId: lead.sessionId || "",
       name: lead.name || "",
       phone: lead.phone || "",
       email: lead.email || "",
@@ -44,8 +45,8 @@ router.get("/", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching call leads:", error);
-    res.status(500).json({ error: "Failed to fetch call leads" });
+    console.error("Error fetching chat leads:", error);
+    res.status(500).json({ error: "Failed to fetch chat leads" });
   }
 });
 

@@ -2,12 +2,10 @@ import { useEffect, useState, useRef } from "react";
 import "./ChatLogsDashboard.css";
 
 export default function ChatLogsDashboard() {
+
   const [sessions, setSessions] = useState([]);
   const [messages, setMessages] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
-
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState(null);
 
   const API = "http://76.13.242.148:4000";
 
@@ -16,27 +14,30 @@ export default function ChatLogsDashboard() {
   /* ----------------------------
      Auto Scroll
   -----------------------------*/
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+
   /* ----------------------------
      Load Sessions
   -----------------------------*/
+
   useEffect(() => {
-    fetch(`${API}/api/chat/sessions?page=${page}&limit=10`)
-      .then((res) => res.json())
-      .then((data) => {
-        setSessions(Array.isArray(data.items) ? data.items : []);
-        setPagination(data.pagination || null);
-      })
-      .catch((err) => console.error(err));
-  }, [page]);
+    fetch(`${API}/api/chat/sessions`)
+      .then(res => res.json())
+      .then(data => setSessions(data))
+      .catch(err => console.error(err));
+  }, []);
+
 
   /* ----------------------------
      Load Messages
   -----------------------------*/
+
   async function loadMessages(sessionId) {
+
     setActiveSession(sessionId);
 
     const res = await fetch(`${API}/api/chat/${sessionId}`);
@@ -44,6 +45,7 @@ export default function ChatLogsDashboard() {
 
     setMessages(data);
   }
+
 
   function formatTime(ts) {
     if (!ts) return "";
@@ -56,14 +58,19 @@ export default function ChatLogsDashboard() {
 
     let cleaned = msg;
 
+    // remove leading = (n8n expression artifact)
     cleaned = cleaned.replace(/^=/, "");
+
+    // remove accidental leading whitespace
     cleaned = cleaned.replace(/^\s+/, "");
+
+    // normalize line breaks
     cleaned = cleaned.replace(/\n/g, "<br>");
 
     return cleaned.trim();
   }
-
   return (
+
     <>
       <div className="header">
         <div>
@@ -82,16 +89,21 @@ export default function ChatLogsDashboard() {
           ☰ All Chat <span>####</span>
         </button>
       </div>
-
       <div className="chatLayout">
+
         {/* LEFT PANEL */}
+
         <div className="chatSessions">
+
+
           {sessions.map((s) => (
+
             <div
               key={s.sessionId}
               onClick={() => loadMessages(s.sessionId)}
               className={`sessionItem ${activeSession === s.sessionId ? "active" : ""}`}
             >
+
               <div className="sessionName">
                 {s.visitor?.name || "Anonymous"}
               </div>
@@ -99,34 +111,18 @@ export default function ChatLogsDashboard() {
               <div className="sessionPhone">
                 {s.visitor?.phone || "-"}
               </div>
+
             </div>
+
           ))}
 
-          {pagination && (
-            <div className="table-pagination">
-              <button
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                disabled={!pagination.hasPrevPage}
-              >
-                Previous
-              </button>
-
-              <span>
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-
-              <button
-                onClick={() => setPage((prev) => prev + 1)}
-                disabled={!pagination.hasNextPage}
-              >
-                Next
-              </button>
-            </div>
-          )}
         </div>
 
+
         {/* RIGHT PANEL */}
+
         <div className="chatWindow">
+
           {!activeSession && (
             <div className="emptyChat">
               Select a conversation
@@ -134,14 +130,18 @@ export default function ChatLogsDashboard() {
           )}
 
           {messages.map((m, i) => {
+
             const isUser = m.role === "user";
 
             return (
+
               <div
                 key={m._id || i}
                 className={`chatRow ${isUser ? "user" : "bot"}`}
               >
+
                 <div className="chatBubble">
+
                   <div className="chatMeta">
                     <span className="chatRole">
                       {isUser ? "User" : "Bot"}
@@ -155,16 +155,22 @@ export default function ChatLogsDashboard() {
                   <div
                     className="chatText"
                     dangerouslySetInnerHTML={{
-                      __html: cleanMessage(m.message),
+                      __html: cleanMessage(m.message)
                     }}
                   />
+
                 </div>
+
               </div>
-            );
+
+            )
+
           })}
 
           <div ref={messagesEndRef}></div>
+
         </div>
+
       </div>
     </>
   );

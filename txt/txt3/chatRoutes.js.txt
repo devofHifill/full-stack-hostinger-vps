@@ -96,40 +96,29 @@ router.post("/message", async (req, res) => {
 GET ALL CHAT SESSIONS
 */
 router.get("/sessions", async (req, res) => {
+
   try {
-    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
-    const limit = Math.max(parseInt(req.query.limit || "10", 10), 1);
-    const skip = (page - 1) * limit;
 
-    const totalItems = await ChatSession.countDocuments({});
-
-    const sessions = await ChatSession.find({})
+    const sessions = await ChatSession
+      .find()
       .sort({ updatedAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+      .limit(100);
 
-    const totalPages = Math.ceil(totalItems / limit) || 1;
+    res.json(sessions);
 
-    res.json({
-      items: sessions,
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      },
-    });
   } catch (err) {
+
     console.error(err);
 
     res.status(500).json({
-      error: "Failed to fetch sessions",
+      error: "Failed to fetch sessions"
     });
+
   }
+
 });
+
+
 
 /*
 GET CHAT HISTORY

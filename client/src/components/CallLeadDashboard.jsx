@@ -64,6 +64,8 @@ function CallLeadDashboard() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
 
   useEffect(() => {
     const fetchLeads = async () => {
@@ -72,7 +74,7 @@ function CallLeadDashboard() {
         setError("");
 
         const apiBase = "http://76.13.242.148:4000";
-        const res = await fetch(`${apiBase}/api/call-leads`);
+        const res = await fetch(`${apiBase}/api/call-leads?page=${page}&limit=10`);
 
         if (!res.ok) {
           throw new Error(`Failed to fetch call leads: ${res.status}`);
@@ -84,7 +86,8 @@ function CallLeadDashboard() {
         }
 
         const data = await res.json();
-        setLeads(Array.isArray(data) ? data : []);
+        setLeads(Array.isArray(data.items) ? data.items : []);
+        setPagination(data.pagination || null);
       } catch (err) {
         console.error("Call lead fetch error:", err);
         setError("Unable to load call leads.");
@@ -94,7 +97,7 @@ function CallLeadDashboard() {
     };
 
     fetchLeads();
-  }, []);
+  }, [page]);
 
   const handleExportCsv = () => {
     downloadCsv("call-leads.csv", leads);
@@ -125,36 +128,60 @@ function CallLeadDashboard() {
         ) : leads.length === 0 ? (
           <div className="call-lead-state">No call leads found.</div>
         ) : (
-          <div className="call-lead-table-wrap">
-            <table className="call-lead-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Phone</th>
-                  <th>Email</th>
-                  <th>Loan Goal</th>
-                  <th>Refi Objective</th>
-                  <th>Appointment</th>
-                  <th>Status</th>
-                  <th>Created At</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map((lead) => (
-                  <tr key={lead._id}>
-                    <td>{lead.name || "—"}</td>
-                    <td>{lead.phone || "—"}</td>
-                    <td>{lead.email || "—"}</td>
-                    <td>{lead.loanGoal || "—"}</td>
-                    <td>{lead.refiObjective || "—"}</td>
-                    <td>{lead.appointmentScheduled ? "Yes" : "No"}</td>
-                    <td>{lead.status || "—"}</td>
-                    <td>{formatDate(lead.createdAt)}</td>
+          <>
+            <div className="call-lead-table-wrap">
+              <table className="call-lead-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Loan Goal</th>
+                    <th>Refi Objective</th>
+                    <th>Appointment</th>
+                    <th>Status</th>
+                    <th>Created At</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {leads.map((lead) => (
+                    <tr key={lead._id}>
+                      <td>{lead.name || "—"}</td>
+                      <td>{lead.phone || "—"}</td>
+                      <td>{lead.email || "—"}</td>
+                      <td>{lead.loanGoal || "—"}</td>
+                      <td>{lead.refiObjective || "—"}</td>
+                      <td>{lead.appointmentScheduled ? "Yes" : "No"}</td>
+                      <td>{lead.status || "—"}</td>
+                      <td>{formatDate(lead.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {pagination && (
+              <div className="table-pagination">
+                <button
+                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={!pagination.hasPrevPage}
+                >
+                  Previous
+                </button>
+
+                <span>
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+
+                <button
+                  onClick={() => setPage((prev) => prev + 1)}
+                  disabled={!pagination.hasNextPage}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

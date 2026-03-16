@@ -1,0 +1,460 @@
+import React, { useMemo } from "react";
+import "./CallMetricsOverview.css";
+
+function formatCurrency(value) {
+  return `$${Number(value || 0).toFixed(2)}`;
+}
+
+function formatPercent(value) {
+  return `${Number(value || 0).toFixed(1)}%`;
+}
+
+function formatDuration(seconds) {
+  const total = Math.max(0, Math.floor(Number(seconds || 0)));
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function formatMinutes(value) {
+  return Number(value || 0).toFixed(2);
+}
+
+function StatCard({ title, value, subtext, tone = "default" }) {
+  return (
+    <div className={`metrics-stat-card metrics-tone-${tone}`}>
+      <div className="metrics-stat-label">{title}</div>
+      <div className="metrics-stat-value">{value}</div>
+      {subtext ? <div className="metrics-stat-subtext">{subtext}</div> : null}
+    </div>
+  );
+}
+
+function SummaryListCard({ title, items, footer }) {
+  return (
+    <section className="metrics-panel">
+      <div className="metrics-panel-header">
+        <h3>{title}</h3>
+      </div>
+
+      <div className="metrics-summary-list">
+        {items.map((item, index) => (
+          <div className="metrics-summary-row" key={`${item.label}-${index}`}>
+            <div className="metrics-summary-left">
+              <span className={`metrics-dot ${item.dotClass || ""}`} />
+              <span className="metrics-summary-label">{item.label}</span>
+            </div>
+
+            <div className="metrics-summary-right">
+              <strong>{item.value}</strong>
+              {item.meta ? <span>{item.meta}</span> : null}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {footer ? <div className="metrics-panel-footer">{footer}</div> : null}
+    </section>
+  );
+}
+
+export default function CallMetricsOverview({
+  dateRangeLabel = "02/16/2026 - 03/16/2026",
+  groupedBy = "Days",
+  assistantFilterLabel = "All Assistants",
+  lastSyncedLabel = "Synced 2 min ago",
+  onRefresh,
+  onExport,
+  metrics = {
+    totalCallMinutes: 282.97,
+    totalCalls: 542,
+    totalSpent: 26.44,
+    avgCostPerCall: 0.05,
+    avgDurationSeconds: 31,
+    successRate: 18.4,
+  },
+  assistantRows = [
+    {
+      assistant: "Imani (Inbound)",
+      calls: 312,
+      minutes: 198.4,
+      avgDurationSeconds: 38,
+      spend: 14.82,
+      avgCostPerCall: 0.05,
+      successRate: 22.1,
+      tone: "purple",
+    },
+    {
+      assistant: "Imani (Outbound)",
+      calls: 230,
+      minutes: 84.57,
+      avgDurationSeconds: 22,
+      spend: 11.62,
+      avgCostPerCall: 0.05,
+      successRate: 13.4,
+      tone: "blue",
+    },
+  ],
+  endedReasons = [
+    { reason: "customer-ended-call", calls: 184, tone: "blue" },
+    { reason: "silence-timed-out", calls: 126, tone: "amber" },
+    { reason: "voicemail", calls: 88, tone: "red" },
+    { reason: "customer-busy", calls: 54, tone: "amber" },
+    { reason: "assistant-ended-call", calls: 41, tone: "purple" },
+    { reason: "customer-did-not-answer", calls: 27, tone: "blue" },
+    { reason: "twilio-failed-to-connect-call", calls: 12, tone: "red" },
+    { reason: "twilio-reported-customer-misdialed", calls: 6, tone: "amber" },
+    { reason: "assistant-forwarded-call", calls: 4, tone: "purple" },
+  ],
+  successBreakdown = {
+    true: 100,
+    false: 382,
+    unknown: 60,
+  },
+}) {
+  const totalCalls = Number(metrics.totalCalls || 0);
+
+  const topEndedReasons = useMemo(() => {
+    return [...endedReasons]
+      .sort((a, b) => b.calls - a.calls)
+      .slice(0, 4)
+      .map((item) => ({
+        label: item.reason,
+        value: item.calls,
+        meta: totalCalls ? `${((item.calls / totalCalls) * 100).toFixed(1)}%` : "0.0%",
+        dotClass: `metrics-dot-${item.tone || "default"}`,
+      }));
+  }, [endedReasons, totalCalls]);
+
+  const assistantSummaryItems = useMemo(() => {
+    return assistantRows.map((row) => ({
+      label: row.assistant,
+      value: `${row.calls} calls`,
+      meta: `${formatDuration(row.avgDurationSeconds)} avg • ${formatPercent(
+        row.successRate
+      )} success`,
+      dotClass: `metrics-dot-${row.tone || "default"}`,
+    }));
+  }, [assistantRows]);
+
+  const qualityFlags = useMemo(() => {
+    const flags = [];
+
+    const silence = endedReasons.find((x) => x.reason === "silence-timed-out")?.calls || 0;
+    const voicemail = endedReasons.find((x) => x.reason === "voicemail")?.calls || 0;
+    const outbound = assistantRows.find((x) =>
+      x.assistant.toLowerCase().includes("outbound")
+    );
+    const unknownSuccess = Number(successBreakdown.unknown || 0);
+
+    if (silence / Math.max(totalCalls, 1) > 0.15) {
+      flags.push({
+        label: "Silence timeout rate is high",
+        value: totalCalls ? `${((silence / totalCalls) * 100).toFixed(1)}%` : "0.0%",
+        meta: "Review silence recovery prompts",
+        dotClass: "metrics-dot-amber",
+      });
+    }
+
+    if (outbound && outbound.successRate < 15) {
+      flags.push({
+        label: "Outbound success is below target",
+        value: formatPercent(outbound.successRate),
+        meta: "Investigate call opener and targeting",
+        dotClass: "metrics-dot-red",
+      });
+    }
+
+    if (voicemail / Math.max(totalCalls, 1) > 0.12) {
+      flags.push({
+        label: "Voicemail share is elevated",
+        value: totalCalls ? `${((voicemail / totalCalls) * 100).toFixed(1)}%` : "0.0%",
+        meta: "Consider retry-window strategy",
+        dotClass: "metrics-dot-blue",
+      });
+    }
+
+    if (unknownSuccess > 0) {
+      flags.push({
+        label: "Unknown success status present",
+        value: String(unknownSuccess),
+        meta: "Normalize evaluation values server-side",
+        dotClass: "metrics-dot-purple",
+      });
+    }
+
+    return flags.length
+      ? flags
+      : [
+          {
+            label: "No major quality flags detected",
+            value: "Healthy",
+            meta: "Current evaluation looks stable",
+            dotClass: "metrics-dot-green",
+          },
+        ];
+  }, [assistantRows, endedReasons, successBreakdown, totalCalls]);
+
+  const knownEvaluations =
+    Number(successBreakdown.true || 0) + Number(successBreakdown.false || 0);
+
+  const evaluationCoverage = totalCalls
+    ? ((knownEvaluations / totalCalls) * 100).toFixed(1)
+    : "0.0";
+
+  return (
+    <div className="metrics-page">
+      <div className="metrics-topbar">
+        <div>
+          <h1>Metrics</h1>
+          <p>Operational overview for AI calling performance.</p>
+        </div>
+
+        <div className="metrics-topbar-controls">
+          <div className="metrics-filter-chip">{dateRangeLabel}</div>
+          <div className="metrics-filter-chip">
+            grouped by <strong>{groupedBy}</strong>
+          </div>
+          <div className="metrics-filter-chip">{assistantFilterLabel}</div>
+
+          <button className="metrics-btn metrics-btn-secondary" onClick={onRefresh}>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="metrics-sync-row">{lastSyncedLabel}</div>
+
+      <div className="metrics-stat-grid">
+        <StatCard
+          title="Total Call Minutes"
+          value={formatMinutes(metrics.totalCallMinutes)}
+          subtext="Combined conversation time"
+          tone="green"
+        />
+        <StatCard
+          title="Number of Calls"
+          value={String(metrics.totalCalls)}
+          subtext="Inbound + outbound calls"
+          tone="amber"
+        />
+        <StatCard
+          title="Total Spent"
+          value={formatCurrency(metrics.totalSpent)}
+          subtext="Aggregate platform cost"
+          tone="purple"
+        />
+        <StatCard
+          title="Average Cost per Call"
+          value={formatCurrency(metrics.avgCostPerCall)}
+          subtext="Spend efficiency indicator"
+          tone="blue"
+        />
+        <StatCard
+          title="Average Call Duration"
+          value={formatDuration(metrics.avgDurationSeconds)}
+          subtext="Mean duration per call"
+          tone="default"
+        />
+        <StatCard
+          title="Success Rate"
+          value={formatPercent(metrics.successRate)}
+          subtext="Calls marked successful"
+          tone="green"
+        />
+      </div>
+
+      <div className="metrics-summary-grid">
+        <SummaryListCard
+          title="Call Outcome Summary"
+          items={topEndedReasons}
+          footer="Top termination reasons in the selected period"
+        />
+
+        <SummaryListCard
+          title="Assistant Summary"
+          items={assistantSummaryItems}
+          footer="Compare average duration and success rate by assistant"
+        />
+
+        <SummaryListCard
+          title="Quality Flags"
+          items={qualityFlags}
+          footer="Operational issues worth reviewing before deeper analysis"
+        />
+      </div>
+
+      <div className="metrics-analysis-grid">
+        <section className="metrics-panel">
+          <div className="metrics-panel-header">
+            <h3>Call Reason Breakdown</h3>
+            <span className="metrics-panel-meta">Ranked by call volume</span>
+          </div>
+
+          <div className="metrics-table-wrap">
+            <table className="metrics-table metrics-table-compact">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Ended Reason</th>
+                  <th># of Calls</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...endedReasons]
+                  .sort((a, b) => b.calls - a.calls)
+                  .map((item, index) => (
+                    <tr key={item.reason}>
+                      <td>{index + 1}</td>
+                      <td>
+                        <div className="metrics-assistant-cell">
+                          <span
+                            className={`metrics-dot metrics-dot-${item.tone || "default"}`}
+                          />
+                          <span>{item.reason}</span>
+                        </div>
+                      </td>
+                      <td>{item.calls}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="metrics-panel">
+          <div className="metrics-panel-header">
+            <h3>Success Evaluation</h3>
+            <span className="metrics-panel-meta">Summary-first overview</span>
+          </div>
+
+          <div className="metrics-eval-stack">
+            <div className="metrics-eval-card metrics-eval-card-success">
+              <span className="metrics-dot metrics-dot-green" />
+              <div>
+                <div className="metrics-eval-label">Successful</div>
+                <div className="metrics-eval-value">{successBreakdown.true || 0}</div>
+              </div>
+            </div>
+
+            <div className="metrics-eval-card metrics-eval-card-danger">
+              <span className="metrics-dot metrics-dot-red" />
+              <div>
+                <div className="metrics-eval-label">Unsuccessful</div>
+                <div className="metrics-eval-value">{successBreakdown.false || 0}</div>
+              </div>
+            </div>
+
+            <div className="metrics-eval-card metrics-eval-card-info">
+              <span className="metrics-dot metrics-dot-blue" />
+              <div>
+                <div className="metrics-eval-label">Unknown</div>
+                <div className="metrics-eval-value">{successBreakdown.unknown || 0}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="metrics-mini-stat-grid">
+            <div className="metrics-mini-stat">
+              <span>Success Rate</span>
+              <strong>{formatPercent(metrics.successRate)}</strong>
+            </div>
+            <div className="metrics-mini-stat">
+              <span>Known Evaluation Coverage</span>
+              <strong>{evaluationCoverage}%</strong>
+            </div>
+          </div>
+
+          <div className="metrics-note-box">
+            Unknown evaluation values should be normalized in backend processing so
+            reporting remains consistent across assistants and call flows.
+          </div>
+        </section>
+      </div>
+
+      <div className="metrics-assistant-fullrow">
+        <section className="metrics-panel">
+          <div className="metrics-panel-header">
+            <h3>Assistant Performance</h3>
+            <span className="metrics-panel-meta">Detailed operational breakdown</span>
+          </div>
+
+          <div className="metrics-table-wrap">
+            <table className="metrics-table">
+              <thead>
+                <tr>
+                  <th>Assistant</th>
+                  <th>Calls</th>
+                  <th>Minutes</th>
+                  <th>Avg Duration</th>
+                  <th>Spend</th>
+                  <th>Avg Cost/Call</th>
+                  <th>Success Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assistantRows.map((row) => (
+                  <tr key={row.assistant}>
+                    <td>
+                      <div className="metrics-assistant-cell">
+                        <span className={`metrics-dot metrics-dot-${row.tone || "default"}`} />
+                        <span>{row.assistant}</span>
+                      </div>
+                    </td>
+                    <td>{row.calls}</td>
+                    <td>{formatMinutes(row.minutes)}</td>
+                    <td>{formatDuration(row.avgDurationSeconds)}</td>
+                    <td>{formatCurrency(row.spend)}</td>
+                    <td>{formatCurrency(row.avgCostPerCall)}</td>
+                    <td>
+                      <span
+                        className={`metrics-pill ${
+                          row.successRate >= 20
+                            ? "metrics-pill-success"
+                            : row.successRate >= 12
+                            ? "metrics-pill-warning"
+                            : "metrics-pill-danger"
+                        }`}
+                      >
+                        {formatPercent(row.successRate)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <section className="metrics-panel">
+        <div className="metrics-panel-header">
+          <h3>Operational Insights</h3>
+          <span className="metrics-panel-meta">Action-oriented summary</span>
+        </div>
+
+        <div className="metrics-insights-grid">
+          <div className="metrics-insight-card">
+            <h4>Key Insights</h4>
+            <ul>
+              <li>Silence timeout is one of the largest call termination buckets.</li>
+              <li>Inbound performance is stronger than outbound on success rate.</li>
+              <li>Unknown evaluation states indicate a backend normalization gap.</li>
+              <li>Cost per call is stable, but low-intent calls reduce efficiency.</li>
+            </ul>
+          </div>
+
+          <div className="metrics-insight-card">
+            <h4>Recommended Actions</h4>
+            <ul>
+              <li>Improve silence recovery prompts and retry handling.</li>
+              <li>Standardize success field mapping before analytics ingestion.</li>
+              <li>Split unreachable, voicemail, and busy outcomes more cleanly.</li>
+              <li>Track assistant performance separately for inbound vs outbound.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

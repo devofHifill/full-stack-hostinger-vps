@@ -1,0 +1,47 @@
+.metrics-root {
+  width: 100%;
+}
+
+.metrics-switcher {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.metrics-switch-btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.metrics-switch-btn:hover {
+  background: #f1f5f9;
+}
+
+.metrics-switch-btn.active {
+  background: #7249c3;
+  color: white;
+  border-color: #7249c3;
+}
+
+.metrics-content {
+  width: 100%;
+}
+
+.metrics-root{
+  width:100%;
+}
+
+.metrics-switcher{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.metrics-content{
+  width:100%;
+}

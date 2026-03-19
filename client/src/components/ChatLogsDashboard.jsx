@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import DateFilter from "./DateFilter";
+import { buildDateFilterParams } from "../utils/dateFilterParams";
 import "./ChatLogsDashboard.css";
 
 export default function ChatLogsDashboard() {
@@ -9,41 +11,140 @@ export default function ChatLogsDashboard() {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState(null);
 
-  const API = "http://76.13.242.148:4000";
+  const [loadingSessions, setLoadingSessions] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [error, setError] = useState("");
+  const [filterError, setFilterError] = useState("");
+
+  const [dateFilter, setDateFilter] = useState("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+
+  const API = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
   const messagesEndRef = useRef(null);
 
-  /* ----------------------------
-     Auto Scroll
-  -----------------------------*/
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  /* ----------------------------
-     Load Sessions
-  -----------------------------*/
-  useEffect(() => {
-    fetch(`${API}/api/chat/sessions?page=${page}&limit=10`)
-      .then((res) => res.json())
-      .then((data) => {
-        setSessions(Array.isArray(data.items) ? data.items : []);
-        setPagination(data.pagination || null);
-      })
-      .catch((err) => console.error(err));
-  }, [page]);
-
-  /* ----------------------------
-     Load Messages
-  -----------------------------*/
   async function loadMessages(sessionId) {
-    setActiveSession(sessionId);
+    try {
+      setLoadingMessages(true);
+      setActiveSession(sessionId);
 
-    const res = await fetch(`${API}/api/chat/${sessionId}`);
-    const data = await res.json();
+      const endpoint = `/api/chat/${sessionId}`;
+      const url = API ? `${API}${endpoint}` : endpoint;
 
-    setMessages(data);
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
+
+      const data = await res.json();
+      setMessages(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+      setMessages([]);
+    } finally {
+      setLoadingMessages(false);
+    }
   }
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function fetchSessions() {
+      try {
+        setLoadingSessions(true);
+        setError("");
+        setFilterError("");
+
+        if (dateFilter === "custom") {
+          if (!customStartDate || !customEndDate) {
+            if (!ignore) setLoadingSessions(false);
+            return;
+          }
+
+          if (customStartDate > customEndDate) {
+            if (!ignore) {
+              setFilterError("Start date cannot be after end date.");
+              setLoadingSessions(false);
+            }
+            return;
+          }
+        }
+
+        const params = buildDateFilterParams(
+          dateFilter,
+          customStartDate,
+          customEndDate
+        );
+
+        params.set("page", String(page));
+        params.set("limit", "10");
+
+        const endpoint = `/api/chat/sessions?${params.toString()}`;
+        const url = API ? `${API}${endpoint}` : endpoint;
+
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Request failed with status ${res.status}`);
+        }
+
+        const data = await res.json();
+        const sessionItems = Array.isArray(data.items) ? data.items : [];
+
+        if (!ignore) {
+          setSessions(sessionItems);
+          setPagination(data.pagination || null);
+
+          if (sessionItems.length === 0) {
+            setActiveSession(null);
+            setMessages([]);
+            return;
+          }
+
+          const activeStillExists = sessionItems.some(
+            (s) => s.sessionId === activeSession
+          );
+
+          if (!activeSession || !activeStillExists) {
+            loadMessages(sessionItems[0].sessionId);
+          }
+        }
+      } catch (err) {
+        if (!ignore) {
+          console.error("Failed to load chat sessions:", err);
+          setError(err.message || "Failed to load chat sessions");
+          setSessions([]);
+          setPagination(null);
+          setActiveSession(null);
+          setMessages([]);
+        }
+      } finally {
+        if (!ignore) setLoadingSessions(false);
+      }
+    }
+
+    fetchSessions();
+
+    return () => {
+      ignore = true;
+    };
+  }, [page, dateFilter, customStartDate, customEndDate]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [dateFilter, customStartDate, customEndDate]);
 
   function formatTime(ts) {
     if (!ts) return "";
@@ -77,32 +178,48 @@ export default function ChatLogsDashboard() {
         Final features and metrics may change.
       </div>
 
-      <div className="filters">
-        <button className="filter-btn">
-          ☰ All Chat <span>####</span>
-        </button>
+      <div className="filters chat-logs-filters">
+        <DateFilter
+          value={dateFilter}
+          onChange={setDateFilter}
+          customStartDate={customStartDate}
+          customEndDate={customEndDate}
+          onCustomStartDateChange={setCustomStartDate}
+          onCustomEndDateChange={setCustomEndDate}
+        />
+
+        {filterError ? (
+          <div className="chat-logs-inline-error">{filterError}</div>
+        ) : null}
       </div>
 
+      {error ? <div className="chat-logs-error-box">{error}</div> : null}
+
       <div className="chatLayout">
-        {/* LEFT PANEL */}
         <div className="chatSessions">
-          {sessions.map((s) => (
-            <div
-              key={s.sessionId}
-              onClick={() => loadMessages(s.sessionId)}
-              className={`sessionItem ${activeSession === s.sessionId ? "active" : ""}`}
-            >
-              <div className="sessionName">
-                {s.visitor?.name || "Anonymous"}
-              </div>
+          {loadingSessions ? (
+            <div className="emptyChat">Loading sessions...</div>
+          ) : sessions.length === 0 ? (
+            <div className="emptyChat">No conversations found for this range.</div>
+          ) : (
+            sessions.map((s) => (
+              <div
+                key={s.sessionId}
+                onClick={() => loadMessages(s.sessionId)}
+                className={`sessionItem ${
+                  activeSession === s.sessionId ? "active" : ""
+                }`}
+              >
+                <div className="sessionName">
+                  {s.visitor?.name || "Anonymous"}
+                </div>
 
-              <div className="sessionPhone">
-                {s.visitor?.phone || "-"}
+                <div className="sessionPhone">{s.visitor?.phone || "-"}</div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
 
-          {pagination && (
+          {pagination && sessions.length > 0 && (
             <div className="table-pagination">
               <button
                 onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
@@ -125,43 +242,40 @@ export default function ChatLogsDashboard() {
           )}
         </div>
 
-        {/* RIGHT PANEL */}
         <div className="chatWindow">
-          {!activeSession && (
-            <div className="emptyChat">
-              Select a conversation
-            </div>
-          )}
+          {loadingMessages ? (
+            <div className="emptyChat">Loading conversation...</div>
+          ) : !activeSession ? (
+            <div className="emptyChat">No conversation selected</div>
+          ) : messages.length === 0 ? (
+            <div className="emptyChat">No messages found in this conversation.</div>
+          ) : (
+            messages.map((m, i) => {
+              const isUser = m.role === "user";
 
-          {messages.map((m, i) => {
-            const isUser = m.role === "user";
+              return (
+                <div
+                  key={m._id || i}
+                  className={`chatRow ${isUser ? "user" : "bot"}`}
+                >
+                  <div className="chatBubble">
+                    <div className="chatMeta">
+                      <span className="chatRole">{isUser ? "User" : "Bot"}</span>
 
-            return (
-              <div
-                key={m._id || i}
-                className={`chatRow ${isUser ? "user" : "bot"}`}
-              >
-                <div className="chatBubble">
-                  <div className="chatMeta">
-                    <span className="chatRole">
-                      {isUser ? "User" : "Bot"}
-                    </span>
+                      <span className="chatTime">{formatTime(m.createdAt)}</span>
+                    </div>
 
-                    <span className="chatTime">
-                      {formatTime(m.createdAt)}
-                    </span>
+                    <div
+                      className="chatText"
+                      dangerouslySetInnerHTML={{
+                        __html: cleanMessage(m.message),
+                      }}
+                    />
                   </div>
-
-                  <div
-                    className="chatText"
-                    dangerouslySetInnerHTML={{
-                      __html: cleanMessage(m.message),
-                    }}
-                  />
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
 
           <div ref={messagesEndRef}></div>
         </div>

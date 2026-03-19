@@ -181,3 +181,23 @@
   font-size: 14px;
   color: #4b5563;
 }
+
+/* ========================================================= */
+
+.call-lead-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.call-lead-inline-error {
+  padding: 10px 12px;
+  border: 1px solid #f3c7c7;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #b42318;
+  font-size: 14px;
+  font-weight: 500;
+}

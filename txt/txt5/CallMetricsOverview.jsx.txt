@@ -40,25 +40,19 @@ function SummaryListCard({ title, items, footer }) {
       </div>
 
       <div className="metrics-summary-list">
-        {items.length === 0 ? (
-          <div className="metrics-note-box">
-            No data available for the selected range.
-          </div>
-        ) : (
-          items.map((item, index) => (
-            <div className="metrics-summary-row" key={`${item.label}-${index}`}>
-              <div className="metrics-summary-left">
-                <span className={`metrics-dot ${item.dotClass || ""}`} />
-                <span className="metrics-summary-label">{item.label}</span>
-              </div>
-
-              <div className="metrics-summary-right">
-                <strong>{item.value}</strong>
-                {item.meta ? <span>{item.meta}</span> : null}
-              </div>
+        {items.map((item, index) => (
+          <div className="metrics-summary-row" key={`${item.label}-${index}`}>
+            <div className="metrics-summary-left">
+              <span className={`metrics-dot ${item.dotClass || ""}`} />
+              <span className="metrics-summary-label">{item.label}</span>
             </div>
-          ))
-        )}
+
+            <div className="metrics-summary-right">
+              <strong>{item.value}</strong>
+              {item.meta ? <span>{item.meta}</span> : null}
+            </div>
+          </div>
+        ))}
       </div>
 
       {footer ? <div className="metrics-panel-footer">{footer}</div> : null}
@@ -83,7 +77,7 @@ const emptyPayload = {
     unknown: 0,
   },
   meta: {
-    dateRangeLabel: "All Time",
+    dateRangeLabel: "All time",
     groupedBy: "Days",
     assistantFilterLabel: "All Assistants",
     lastSyncedLabel: "Not synced yet",
@@ -94,7 +88,6 @@ export default function CallMetricsOverview() {
   const [payload, setPayload] = useState(emptyPayload);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filterError, setFilterError] = useState("");
   const [refreshTick, setRefreshTick] = useState(0);
 
   const [dateFilter, setDateFilter] = useState("all");
@@ -108,36 +101,14 @@ export default function CallMetricsOverview() {
       try {
         setLoading(true);
         setError("");
-        setFilterError("");
 
-        if (dateFilter === "custom") {
-          if (!customStartDate || !customEndDate) {
-            if (!ignore) {
-              setLoading(false);
-            }
-            return;
-          }
+        // const baseUrl = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+        const baseUrl = "http://76.13.242.148:4000";
 
-          if (customStartDate > customEndDate) {
-            if (!ignore) {
-              setFilterError("Start date cannot be after end date.");
-              setLoading(false);
-            }
-            return;
-          }
-        }
+        const params = buildDateFilterParams(dateFilter, customStartDate, customEndDate);
 
-        const baseUrl = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-        const params = buildDateFilterParams(
-          dateFilter,
-          customStartDate,
-          customEndDate
-        );
-
-        const endpoint = `/api/call-metrics${
-          params.toString() ? `?${params.toString()}` : ""
-        }`;
-        const url = baseUrl ? `${baseUrl}${endpoint}` : endpoint;
+        const url = `${baseUrl}/api/call-metrics${params.toString() ? `?${params.toString()}` : ""
+          }`;
 
         const response = await fetch(url, {
           method: "GET",
@@ -155,8 +126,7 @@ export default function CallMetricsOverview() {
             metrics: data.metrics || emptyPayload.metrics,
             assistantRows: data.assistantRows || [],
             endedReasons: data.endedReasons || [],
-            successBreakdown:
-              data.successBreakdown || emptyPayload.successBreakdown,
+            successBreakdown: data.successBreakdown || emptyPayload.successBreakdown,
             meta: data.meta || emptyPayload.meta,
           });
         }
@@ -167,9 +137,7 @@ export default function CallMetricsOverview() {
           setPayload(emptyPayload);
         }
       } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
+        if (!ignore) setLoading(false);
       }
     }
 
@@ -180,28 +148,25 @@ export default function CallMetricsOverview() {
     };
   }, [refreshTick, dateFilter, customStartDate, customEndDate]);
 
-  const { metrics, assistantRows, endedReasons, successBreakdown, meta } =
-    payload;
+  const { metrics, assistantRows, endedReasons, successBreakdown, meta } = payload;
   const totalCalls = Number(metrics.totalCalls || 0);
 
   const topEndedReasons = useMemo(() => {
     return [...endedReasons]
-      .sort((a, b) => Number(b.calls || 0) - Number(a.calls || 0))
+      .sort((a, b) => b.calls - a.calls)
       .slice(0, 4)
       .map((item) => ({
-        label: item.reason || "Unknown",
-        value: item.calls || 0,
-        meta: totalCalls
-          ? `${((Number(item.calls || 0) / totalCalls) * 100).toFixed(1)}%`
-          : "0.0%",
+        label: item.reason,
+        value: item.calls,
+        meta: totalCalls ? `${((item.calls / totalCalls) * 100).toFixed(1)}%` : "0.0%",
         dotClass: `metrics-dot-${item.tone || "default"}`,
       }));
   }, [endedReasons, totalCalls]);
 
   const assistantSummaryItems = useMemo(() => {
     return assistantRows.map((row) => ({
-      label: row.assistant || "Unknown",
-      value: `${Number(row.calls || 0)} calls`,
+      label: row.assistant,
+      value: `${row.calls} calls`,
       meta: `${formatDuration(row.avgDurationSeconds)} avg • ${formatPercent(
         row.successRate
       )} success`,
@@ -230,7 +195,7 @@ export default function CallMetricsOverview() {
       });
     }
 
-    if (outbound && Number(outbound.successRate || 0) < 15) {
+    if (outbound && outbound.successRate < 15) {
       flags.push({
         label: "Outbound success is below target",
         value: formatPercent(outbound.successRate),
@@ -242,9 +207,7 @@ export default function CallMetricsOverview() {
     if (voicemail / Math.max(totalCalls, 1) > 0.12) {
       flags.push({
         label: "Voicemail share is elevated",
-        value: totalCalls
-          ? `${((voicemail / totalCalls) * 100).toFixed(1)}%`
-          : "0.0%",
+        value: totalCalls ? `${((voicemail / totalCalls) * 100).toFixed(1)}%` : "0.0%",
         meta: "Consider retry-window strategy",
         dotClass: "metrics-dot-blue",
       });
@@ -262,13 +225,13 @@ export default function CallMetricsOverview() {
     return flags.length
       ? flags
       : [
-          {
-            label: "No major quality flags detected",
-            value: "Healthy",
-            meta: "Current evaluation looks stable",
-            dotClass: "metrics-dot-green",
-          },
-        ];
+        {
+          label: "No major quality flags detected",
+          value: "Healthy",
+          meta: "Current evaluation looks stable",
+          dotClass: "metrics-dot-green",
+        },
+      ];
   }, [assistantRows, endedReasons, successBreakdown, totalCalls]);
 
   const knownEvaluations =
@@ -300,7 +263,9 @@ export default function CallMetricsOverview() {
           <div className="metrics-panel-header">
             <h3>Unable to load call analytics</h3>
           </div>
-          <div className="metrics-note-box">{error}</div>
+          <div className="metrics-note-box">
+            {error}
+          </div>
           <button
             className="metrics-btn metrics-btn-secondary"
             onClick={() => setRefreshTick((v) => v + 1)}
@@ -330,19 +295,11 @@ export default function CallMetricsOverview() {
             onCustomEndDateChange={setCustomEndDate}
           />
 
-          {filterError ? (
-            <div className="metrics-inline-error">{filterError}</div>
-          ) : null}
-
-          {/* <div className="metrics-filter-chip">
-            {meta.dateRangeLabel || "All Time"}
-          </div>
+          <div className="metrics-filter-chip">{meta.dateRangeLabel}</div>
           <div className="metrics-filter-chip">
-            grouped by <strong>{meta.groupedBy || "Days"}</strong>
+            grouped by <strong>{meta.groupedBy}</strong>
           </div>
-          <div className="metrics-filter-chip">
-            {meta.assistantFilterLabel || "All Assistants"}
-          </div> */}
+          <div className="metrics-filter-chip">{meta.assistantFilterLabel}</div>
 
           <button
             className="metrics-btn metrics-btn-secondary"
@@ -352,10 +309,7 @@ export default function CallMetricsOverview() {
           </button>
         </div>
       </div>
-
-      <div className="metrics-sync-row">
-        {meta.lastSyncedLabel || "Not synced yet"}
-      </div>
+      <div className="metrics-sync-row">{meta.lastSyncedLabel}</div>
 
       <div className="metrics-stat-grid">
         <StatCard
@@ -366,7 +320,7 @@ export default function CallMetricsOverview() {
         />
         <StatCard
           title="Number of Calls"
-          value={String(metrics.totalCalls || 0)}
+          value={String(metrics.totalCalls)}
           subtext="Inbound + outbound calls"
           tone="amber"
         />
@@ -433,30 +387,22 @@ export default function CallMetricsOverview() {
                 </tr>
               </thead>
               <tbody>
-                {endedReasons.length === 0 ? (
-                  <tr>
-                    <td colSpan="3">No data available for the selected range.</td>
-                  </tr>
-                ) : (
-                  [...endedReasons]
-                    .sort((a, b) => Number(b.calls || 0) - Number(a.calls || 0))
-                    .map((item, index) => (
-                      <tr key={`${item.reason || "unknown"}-${index}`}>
-                        <td>{index + 1}</td>
-                        <td>
-                          <div className="metrics-assistant-cell">
-                            <span
-                              className={`metrics-dot metrics-dot-${
-                                item.tone || "default"
-                              }`}
-                            />
-                            <span>{item.reason || "Unknown"}</span>
-                          </div>
-                        </td>
-                        <td>{item.calls || 0}</td>
-                      </tr>
-                    ))
-                )}
+                {[...endedReasons]
+                  .sort((a, b) => b.calls - a.calls)
+                  .map((item, index) => (
+                    <tr key={item.reason}>
+                      <td>{index + 1}</td>
+                      <td>
+                        <div className="metrics-assistant-cell">
+                          <span
+                            className={`metrics-dot metrics-dot-${item.tone || "default"}`}
+                          />
+                          <span>{item.reason}</span>
+                        </div>
+                      </td>
+                      <td>{item.calls}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -473,9 +419,7 @@ export default function CallMetricsOverview() {
               <span className="metrics-dot metrics-dot-green" />
               <div>
                 <div className="metrics-eval-label">Successful</div>
-                <div className="metrics-eval-value">
-                  {successBreakdown.true || 0}
-                </div>
+                <div className="metrics-eval-value">{successBreakdown.true || 0}</div>
               </div>
             </div>
 
@@ -483,9 +427,7 @@ export default function CallMetricsOverview() {
               <span className="metrics-dot metrics-dot-red" />
               <div>
                 <div className="metrics-eval-label">Unsuccessful</div>
-                <div className="metrics-eval-value">
-                  {successBreakdown.false || 0}
-                </div>
+                <div className="metrics-eval-value">{successBreakdown.false || 0}</div>
               </div>
             </div>
 
@@ -493,9 +435,7 @@ export default function CallMetricsOverview() {
               <span className="metrics-dot metrics-dot-blue" />
               <div>
                 <div className="metrics-eval-label">Unknown</div>
-                <div className="metrics-eval-value">
-                  {successBreakdown.unknown || 0}
-                </div>
+                <div className="metrics-eval-value">{successBreakdown.unknown || 0}</div>
               </div>
             </div>
           </div>
@@ -522,9 +462,7 @@ export default function CallMetricsOverview() {
         <section className="metrics-panel">
           <div className="metrics-panel-header">
             <h3>Assistant Performance</h3>
-            <span className="metrics-panel-meta">
-              Detailed operational breakdown
-            </span>
+            <span className="metrics-panel-meta">Detailed operational breakdown</span>
           </div>
 
           <div className="metrics-table-wrap">
@@ -541,51 +479,40 @@ export default function CallMetricsOverview() {
                 </tr>
               </thead>
               <tbody>
-                {assistantRows.length === 0 ? (
-                  <tr>
-                    <td colSpan="7">
-                      No assistant data available for the selected range.
+                {assistantRows.map((row) => (
+                  <tr key={row.assistant}>
+                    <td>
+                      <div className="metrics-assistant-cell">
+                        <span className={`metrics-dot metrics-dot-${row.tone || "default"}`} />
+                        <span>{row.assistant}</span>
+                      </div>
+                    </td>
+                    <td>{row.calls}</td>
+                    <td>{formatMinutes(row.minutes)}</td>
+                    <td>{formatDuration(row.avgDurationSeconds)}</td>
+                    <td>{formatCurrency(row.spend)}</td>
+                    <td>{formatCurrency(row.avgCostPerCall)}</td>
+                    <td>
+                      <span
+                        className={`metrics-pill ${row.successRate >= 20
+                          ? "metrics-pill-success"
+                          : row.successRate >= 12
+                            ? "metrics-pill-warning"
+                            : "metrics-pill-danger"
+                          }`}
+                      >
+                        {formatPercent(row.successRate)}
+                      </span>
                     </td>
                   </tr>
-                ) : (
-                  assistantRows.map((row, index) => (
-                    <tr key={`${row.assistant || "assistant"}-${index}`}>
-                      <td>
-                        <div className="metrics-assistant-cell">
-                          <span
-                            className={`metrics-dot metrics-dot-${
-                              row.tone || "default"
-                            }`}
-                          />
-                          <span>{row.assistant || "Unknown"}</span>
-                        </div>
-                      </td>
-                      <td>{row.calls || 0}</td>
-                      <td>{formatMinutes(row.minutes)}</td>
-                      <td>{formatDuration(row.avgDurationSeconds)}</td>
-                      <td>{formatCurrency(row.spend)}</td>
-                      <td>{formatCurrency(row.avgCostPerCall)}</td>
-                      <td>
-                        <span
-                          className={`metrics-pill ${
-                            Number(row.successRate || 0) >= 20
-                              ? "metrics-pill-success"
-                              : Number(row.successRate || 0) >= 12
-                              ? "metrics-pill-warning"
-                              : "metrics-pill-danger"
-                          }`}
-                        >
-                          {formatPercent(row.successRate)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
         </section>
       </div>
+
+
     </div>
   );
 }

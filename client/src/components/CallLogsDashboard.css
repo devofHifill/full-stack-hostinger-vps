@@ -764,3 +764,37 @@ tbody tr:hover {
   font-size: 14px;
   color: #4b5563;
 }
+
+/* ============================== */
+.call-logs-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.call-logs-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.call-logs-inline-error {
+  padding: 10px 12px;
+  border: 1px solid #f3c7c7;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #b42318;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.call-logs-error-box {
+  padding: 14px 16px;
+  border: 1px solid #f3c7c7;
+  border-radius: 12px;
+  background: #fff4f4;
+  color: #b42318;
+}

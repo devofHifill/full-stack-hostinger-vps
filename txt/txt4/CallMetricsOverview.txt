@@ -1,460 +1,621 @@
-import React, { useMemo } from react;
-import .CallMetricsOverview.css;
+:root {
+  --metrics-bg: #f4f7fb;
+  --metrics-surface: #ffffff;
+  --metrics-surface-soft: #f8fbff;
+  --metrics-surface-alt: #f1f5f9;
 
-function formatCurrency(value) {
-  return `$${Number(value  0).toFixed(2)}`;
+  --metrics-border: #e2e8f0;
+  --metrics-border-strong: #cbd5e1;
+
+  --metrics-text: #0f172a;
+  --metrics-text-soft: #334155;
+  --metrics-text-muted: #64748b;
+
+  --metrics-purple: #7249c3;
+  --metrics-purple-soft: rgba(114, 73, 195, 0.12);
+
+  --metrics-orange: #ff7a00;
+  --metrics-orange-soft: rgba(255, 122, 0, 0.12);
+
+  --metrics-blue: #2563eb;
+  --metrics-blue-soft: rgba(37, 99, 235, 0.12);
+
+  --metrics-green: #10b981;
+  --metrics-green-soft: rgba(16, 185, 129, 0.12);
+
+  --metrics-red: #ef4444;
+  --metrics-red-soft: rgba(239, 68, 68, 0.12);
+
+  --metrics-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  --metrics-radius-lg: 20px;
+  --metrics-radius-md: 16px;
+  --metrics-radius-sm: 12px;
 }
 
-function formatPercent(value) {
-  return `${Number(value  0).toFixed(1)}%`;
+.metrics-page {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(114, 73, 195, 0.06), transparent 28%),
+    radial-gradient(circle at top right, rgba(255, 122, 0, 0.05), transparent 22%),
+    linear-gradient(180deg, #f8fbff 0%, #f3f7fc 100%);
+  color: var(--metrics-text);
+  padding: 28px;
+  border-radius: 24px;
 }
 
-function formatDuration(seconds) {
-  const total = Math.max(0, Math.floor(Number(seconds  0)));
-  const mins = Math.floor(total  60);
-  const secs = total % 60;
-  return `${String(mins).padStart(2, 0)}${String(secs).padStart(2, 0)}`;
+.metrics-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
-function formatMinutes(value) {
-  return Number(value  0).toFixed(2);
+.metrics-topbar h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--metrics-text);
 }
 
-function StatCard({ title, value, subtext, tone = default }) {
-  return (
-    div className={`metrics-stat-card metrics-tone-${tone}`}
-      div className=metrics-stat-label{title}div
-      div className=metrics-stat-value{value}div
-      {subtext  div className=metrics-stat-subtext{subtext}div  null}
-    div
-  );
+.metrics-topbar p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--metrics-text-muted);
 }
 
-function SummaryListCard({ title, items, footer }) {
-  return (
-    section className=metrics-panel
-      div className=metrics-panel-header
-        h3{title}h3
-      div
-
-      div className=metrics-summary-list
-        {items.map((item, index) = (
-          div className=metrics-summary-row key={`${item.label}-${index}`}
-            div className=metrics-summary-left
-              span className={`metrics-dot ${item.dotClass  }`} 
-              span className=metrics-summary-label{item.label}span
-            div
-
-            div className=metrics-summary-right
-              strong{item.value}strong
-              {item.meta  span{item.meta}span  null}
-            div
-          div
-        ))}
-      div
-
-      {footer  div className=metrics-panel-footer{footer}div  null}
-    section
-  );
+.metrics-topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-export default function CallMetricsOverview({
-  dateRangeLabel = 02162026 - 03162026,
-  groupedBy = Days,
-  assistantFilterLabel = All Assistants,
-  lastSyncedLabel = Synced 2 min ago,
-  onRefresh,
-  onExport,
-  metrics = {
-    totalCallMinutes 282.97,
-    totalCalls 542,
-    totalSpent 26.44,
-    avgCostPerCall 0.05,
-    avgDurationSeconds 31,
-    successRate 18.4,
-  },
-  assistantRows = [
-    {
-      assistant Imani (Inbound),
-      calls 312,
-      minutes 198.4,
-      avgDurationSeconds 38,
-      spend 14.82,
-      avgCostPerCall 0.05,
-      successRate 22.1,
-      tone purple,
-    },
-    {
-      assistant Imani (Outbound),
-      calls 230,
-      minutes 84.57,
-      avgDurationSeconds 22,
-      spend 11.62,
-      avgCostPerCall 0.05,
-      successRate 13.4,
-      tone blue,
-    },
-  ],
-  endedReasons = [
-    { reason customer-ended-call, calls 184, tone blue },
-    { reason silence-timed-out, calls 126, tone amber },
-    { reason voicemail, calls 88, tone red },
-    { reason customer-busy, calls 54, tone amber },
-    { reason assistant-ended-call, calls 41, tone purple },
-    { reason customer-did-not-answer, calls 27, tone blue },
-    { reason twilio-failed-to-connect-call, calls 12, tone red },
-    { reason twilio-reported-customer-misdialed, calls 6, tone amber },
-    { reason assistant-forwarded-call, calls 4, tone purple },
-  ],
-  successBreakdown = {
-    true 100,
-    false 382,
-    unknown 60,
-  },
-}) {
-  const totalCalls = Number(metrics.totalCalls  0);
+.metrics-filter-chip {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--metrics-border);
+  color: var(--metrics-text-soft);
+  font-size: 14px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
 
-  const topEndedReasons = useMemo(() = {
-    return [...endedReasons]
-      .sort((a, b) = b.calls - a.calls)
-      .slice(0, 4)
-      .map((item) = ({
-        label item.reason,
-        value item.calls,
-        meta totalCalls  `${((item.calls  totalCalls)  100).toFixed(1)}%`  0.0%,
-        dotClass `metrics-dot-${item.tone  default}`,
-      }));
-  }, [endedReasons, totalCalls]);
+.metrics-filter-chip strong {
+  color: var(--metrics-text);
+  font-weight: 600;
+}
 
-  const assistantSummaryItems = useMemo(() = {
-    return assistantRows.map((row) = ({
-      label row.assistant,
-      value `${row.calls} calls`,
-      meta `${formatDuration(row.avgDurationSeconds)} avg • ${formatPercent(
-        row.successRate
-      )} success`,
-      dotClass `metrics-dot-${row.tone  default}`,
-    }));
-  }, [assistantRows]);
+.metrics-sync-row {
+  font-size: 13px;
+  color: var(--metrics-text-muted);
+  margin-bottom: 18px;
+}
 
-  const qualityFlags = useMemo(() = {
-    const flags = [];
+.metrics-btn {
+  min-height: 42px;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
 
-    const silence = endedReasons.find((x) = x.reason === silence-timed-out).calls  0;
-    const voicemail = endedReasons.find((x) = x.reason === voicemail).calls  0;
-    const outbound = assistantRows.find((x) =
-      x.assistant.toLowerCase().includes(outbound)
-    );
-    const unknownSuccess = Number(successBreakdown.unknown  0);
+.metrics-btn-primary {
+  background: linear-gradient(135deg, var(--metrics-purple), #8b5cf6);
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(114, 73, 195, 0.18);
+}
 
-    if (silence  Math.max(totalCalls, 1)  0.15) {
-      flags.push({
-        label Silence timeout rate is high,
-        value totalCalls  `${((silence  totalCalls)  100).toFixed(1)}%`  0.0%,
-        meta Review silence recovery prompts,
-        dotClass metrics-dot-amber,
-      });
-    }
+.metrics-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 22px rgba(114, 73, 195, 0.22);
+}
 
-    if (outbound && outbound.successRate  15) {
-      flags.push({
-        label Outbound success is below target,
-        value formatPercent(outbound.successRate),
-        meta Investigate call opener and targeting,
-        dotClass metrics-dot-red,
-      });
-    }
+.metrics-btn-secondary {
+  background: #ffffff;
+  color: var(--metrics-text);
+  border-color: var(--metrics-border);
+}
 
-    if (voicemail  Math.max(totalCalls, 1)  0.12) {
-      flags.push({
-        label Voicemail share is elevated,
-        value totalCalls  `${((voicemail  totalCalls)  100).toFixed(1)}%`  0.0%,
-        meta Consider retry-window strategy,
-        dotClass metrics-dot-blue,
-      });
-    }
+.metrics-btn-secondary:hover {
+  background: #f8fafc;
+}
 
-    if (unknownSuccess  0) {
-      flags.push({
-        label Unknown success status present,
-        value String(unknownSuccess),
-        meta Normalize evaluation values server-side,
-        dotClass metrics-dot-purple,
-      });
-    }
+/* KPI cards */
 
-    return flags.length
-       flags
-       [
-          {
-            label No major quality flags detected,
-            value Healthy,
-            meta Current evaluation looks stable,
-            dotClass metrics-dot-green,
-          },
-        ];
-  }, [assistantRows, endedReasons, successBreakdown, totalCalls]);
+.metrics-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
 
-  const knownEvaluations =
-    Number(successBreakdown.true  0) + Number(successBreakdown.false  0);
+.metrics-stat-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--metrics-surface);
+  border: 1px solid var(--metrics-border);
+  border-radius: var(--metrics-radius-lg);
+  padding: 18px 18px 16px;
+  box-shadow: var(--metrics-shadow);
+  min-height: 132px;
+}
 
-  const evaluationCoverage = totalCalls
-     ((knownEvaluations  totalCalls)  100).toFixed(1)
-     0.0;
+.metrics-stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 4px;
+  opacity: 1;
+}
 
-  return (
-    div className=metrics-page
-      div className=metrics-topbar
-        div
-          h1Metricsh1
-          pOperational overview for AI calling performance.p
-        div
+.metrics-tone-default::before {
+  background: linear-gradient(90deg, #cbd5e1, transparent);
+}
 
-        div className=metrics-topbar-controls
-          div className=metrics-filter-chip{dateRangeLabel}div
-          div className=metrics-filter-chip
-            grouped by strong{groupedBy}strong
-          div
-          div className=metrics-filter-chip{assistantFilterLabel}div
+.metrics-tone-green::before {
+  background: linear-gradient(90deg, var(--metrics-green), transparent);
+}
 
-          button className=metrics-btn metrics-btn-secondary onClick={onRefresh}
-            Refresh
-          button
-        div
-      div
+.metrics-tone-amber::before {
+  background: linear-gradient(90deg, var(--metrics-orange), transparent);
+}
 
-      div className=metrics-sync-row{lastSyncedLabel}div
+.metrics-tone-purple::before {
+  background: linear-gradient(90deg, var(--metrics-purple), transparent);
+}
 
-      div className=metrics-stat-grid
-        StatCard
-          title=Total Call Minutes
-          value={formatMinutes(metrics.totalCallMinutes)}
-          subtext=Combined conversation time
-          tone=green
-        
-        StatCard
-          title=Number of Calls
-          value={String(metrics.totalCalls)}
-          subtext=Inbound + outbound calls
-          tone=amber
-        
-        StatCard
-          title=Total Spent
-          value={formatCurrency(metrics.totalSpent)}
-          subtext=Aggregate platform cost
-          tone=purple
-        
-        StatCard
-          title=Average Cost per Call
-          value={formatCurrency(metrics.avgCostPerCall)}
-          subtext=Spend efficiency indicator
-          tone=blue
-        
-        StatCard
-          title=Average Call Duration
-          value={formatDuration(metrics.avgDurationSeconds)}
-          subtext=Mean duration per call
-          tone=default
-        
-        StatCard
-          title=Success Rate
-          value={formatPercent(metrics.successRate)}
-          subtext=Calls marked successful
-          tone=green
-        
-      div
+.metrics-tone-blue::before {
+  background: linear-gradient(90deg, var(--metrics-blue), transparent);
+}
 
-      div className=metrics-summary-grid
-        SummaryListCard
-          title=Call Outcome Summary
-          items={topEndedReasons}
-          footer=Top termination reasons in the selected period
-        
+.metrics-stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--metrics-text-soft);
+  margin-bottom: 12px;
+}
 
-        SummaryListCard
-          title=Assistant Summary
-          items={assistantSummaryItems}
-          footer=Compare average duration and success rate by assistant
-        
+.metrics-stat-value {
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--metrics-text);
+  margin-bottom: 10px;
+}
 
-        SummaryListCard
-          title=Quality Flags
-          items={qualityFlags}
-          footer=Operational issues worth reviewing before deeper analysis
-        
-      div
+.metrics-stat-subtext {
+  font-size: 13px;
+  color: var(--metrics-text-muted);
+}
 
-      div className=metrics-analysis-grid
-        section className=metrics-panel
-          div className=metrics-panel-header
-            h3Call Reason Breakdownh3
-            span className=metrics-panel-metaRanked by call volumespan
-          div
+/* Panels */
 
-          div className=metrics-table-wrap
-            table className=metrics-table metrics-table-compact
-              thead
-                tr
-                  thRankth
-                  thEnded Reasonth
-                  th# of Callsth
-                tr
-              thead
-              tbody
-                {[...endedReasons]
-                  .sort((a, b) = b.calls - a.calls)
-                  .map((item, index) = (
-                    tr key={item.reason}
-                      td{index + 1}td
-                      td
-                        div className=metrics-assistant-cell
-                          span
-                            className={`metrics-dot metrics-dot-${item.tone  default}`}
-                          
-                          span{item.reason}span
-                        div
-                      td
-                      td{item.calls}td
-                    tr
-                  ))}
-              tbody
-            table
-          div
-        section
+.metrics-panel {
+  background: var(--metrics-surface);
+  border: 1px solid var(--metrics-border);
+  border-radius: var(--metrics-radius-lg);
+  box-shadow: var(--metrics-shadow);
+  overflow: hidden;
+}
 
-        section className=metrics-panel
-          div className=metrics-panel-header
-            h3Success Evaluationh3
-            span className=metrics-panel-metaSummary-first overviewspan
-          div
+.metrics-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--metrics-border);
+}
 
-          div className=metrics-eval-stack
-            div className=metrics-eval-card metrics-eval-card-success
-              span className=metrics-dot metrics-dot-green 
-              div
-                div className=metrics-eval-labelSuccessfuldiv
-                div className=metrics-eval-value{successBreakdown.true  0}div
-              div
-            div
+.metrics-panel-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--metrics-text);
+}
 
-            div className=metrics-eval-card metrics-eval-card-danger
-              span className=metrics-dot metrics-dot-red 
-              div
-                div className=metrics-eval-labelUnsuccessfuldiv
-                div className=metrics-eval-value{successBreakdown.false  0}div
-              div
-            div
+.metrics-panel-meta {
+  font-size: 12px;
+  color: var(--metrics-text-muted);
+}
 
-            div className=metrics-eval-card metrics-eval-card-info
-              span className=metrics-dot metrics-dot-blue 
-              div
-                div className=metrics-eval-labelUnknowndiv
-                div className=metrics-eval-value{successBreakdown.unknown  0}div
-              div
-            div
-          div
+.metrics-panel-footer {
+  padding: 14px 20px 18px;
+  font-size: 12px;
+  color: var(--metrics-text-muted);
+  border-top: 1px solid var(--metrics-border);
+}
 
-          div className=metrics-mini-stat-grid
-            div className=metrics-mini-stat
-              spanSuccess Ratespan
-              strong{formatPercent(metrics.successRate)}strong
-            div
-            div className=metrics-mini-stat
-              spanKnown Evaluation Coveragespan
-              strong{evaluationCoverage}%strong
-            div
-          div
+/* Summary grid */
 
-          div className=metrics-note-box
-            Unknown evaluation values should be normalized in backend processing so
-            reporting remains consistent across assistants and call flows.
-          div
-        section
-      div
+.metrics-summary-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
 
-      div className=metrics-assistant-fullrow
-        section className=metrics-panel
-          div className=metrics-panel-header
-            h3Assistant Performanceh3
-            span className=metrics-panel-metaDetailed operational breakdownspan
-          div
+.metrics-summary-list {
+  padding: 10px 12px 12px;
+}
 
-          div className=metrics-table-wrap
-            table className=metrics-table
-              thead
-                tr
-                  thAssistantth
-                  thCallsth
-                  thMinutesth
-                  thAvg Durationth
-                  thSpendth
-                  thAvg CostCallth
-                  thSuccess Rateth
-                tr
-              thead
-              tbody
-                {assistantRows.map((row) = (
-                  tr key={row.assistant}
-                    td
-                      div className=metrics-assistant-cell
-                        span className={`metrics-dot metrics-dot-${row.tone  default}`} 
-                        span{row.assistant}span
-                      div
-                    td
-                    td{row.calls}td
-                    td{formatMinutes(row.minutes)}td
-                    td{formatDuration(row.avgDurationSeconds)}td
-                    td{formatCurrency(row.spend)}td
-                    td{formatCurrency(row.avgCostPerCall)}td
-                    td
-                      span
-                        className={`metrics-pill ${
-                          row.successRate = 20
-                             metrics-pill-success
-                             row.successRate = 12
-                             metrics-pill-warning
-                             metrics-pill-danger
-                        }`}
-                      
-                        {formatPercent(row.successRate)}
-                      span
-                    td
-                  tr
-                ))}
-              tbody
-            table
-          div
-        section
-      div
+.metrics-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 8px;
+  border-bottom: 1px solid #edf2f7;
+}
 
-      section className=metrics-panel
-        div className=metrics-panel-header
-          h3Operational Insightsh3
-          span className=metrics-panel-metaAction-oriented summaryspan
-        div
+.metrics-summary-row:last-child {
+  border-bottom: 0;
+}
 
-        div className=metrics-insights-grid
-          div className=metrics-insight-card
-            h4Key Insightsh4
-            ul
-              liSilence timeout is one of the largest call termination buckets.li
-              liInbound performance is stronger than outbound on success rate.li
-              liUnknown evaluation states indicate a backend normalization gap.li
-              liCost per call is stable, but low-intent calls reduce efficiency.li
-            ul
-          div
+.metrics-summary-left,
+.metrics-summary-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-          div className=metrics-insight-card
-            h4Recommended Actionsh4
-            ul
-              liImprove silence recovery prompts and retry handling.li
-              liStandardize success field mapping before analytics ingestion.li
-              liSplit unreachable, voicemail, and busy outcomes more cleanly.li
-              liTrack assistant performance separately for inbound vs outbound.li
-            ul
-          div
-        div
-      section
-    div
-  );
+.metrics-summary-right {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.metrics-summary-label {
+  font-size: 14px;
+  color: var(--metrics-text-soft);
+  word-break: break-word;
+}
+
+.metrics-summary-right strong {
+  color: var(--metrics-text);
+  font-size: 14px;
+}
+
+.metrics-summary-right span {
+  color: var(--metrics-text-muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+/* Dots */
+
+.metrics-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+  flex: 0 0 10px;
+}
+
+.metrics-dot-default {
+  background: #94a3b8;
+}
+
+.metrics-dot-purple {
+  background: var(--metrics-purple);
+}
+
+.metrics-dot-blue {
+  background: var(--metrics-blue);
+}
+
+.metrics-dot-amber {
+  background: var(--metrics-orange);
+}
+
+.metrics-dot-green {
+  background: var(--metrics-green);
+}
+
+.metrics-dot-red {
+  background: var(--metrics-red);
+}
+
+/* Main layout */
+
+.metrics-analysis-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.metrics-assistant-fullrow {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Tables */
+
+.metrics-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.metrics-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+.metrics-table thead th {
+  background: #f8fafc;
+  color: var(--metrics-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--metrics-border);
+  white-space: nowrap;
+}
+
+.metrics-table tbody td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--metrics-text-soft);
+  border-bottom: 1px solid #edf2f7;
+  vertical-align: middle;
+  background: #fff;
+}
+
+.metrics-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.metrics-table tbody tr:hover td {
+  background: #fafcff;
+}
+
+.metrics-table-compact {
+  min-width: 100%;
+}
+
+.metrics-table-compact thead th,
+.metrics-table-compact tbody td {
+  white-space: nowrap;
+}
+
+.metrics-table-compact tbody td:nth-child(1) {
+  width: 72px;
+}
+
+.metrics-table-compact tbody td:nth-child(3) {
+  width: 120px;
+}
+
+.metrics-assistant-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+}
+
+/* Pills */
+
+.metrics-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.metrics-pill-success {
+  background: var(--metrics-green-soft);
+  color: #047857;
+}
+
+.metrics-pill-warning {
+  background: var(--metrics-orange-soft);
+  color: #c2410c;
+}
+
+.metrics-pill-danger {
+  background: var(--metrics-red-soft);
+  color: #b91c1c;
+}
+
+/* Success evaluation */
+
+.metrics-eval-stack {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px 10px;
+}
+
+.metrics-eval-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px;
+  border: 1px solid var(--metrics-border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.metrics-eval-card-success {
+  background: linear-gradient(180deg, #ffffff, #f0fdf4);
+}
+
+.metrics-eval-card-danger {
+  background: linear-gradient(180deg, #ffffff, #fef2f2);
+}
+
+.metrics-eval-card-info {
+  background: linear-gradient(180deg, #ffffff, #eff6ff);
+}
+
+.metrics-eval-label {
+  font-size: 13px;
+  color: var(--metrics-text-muted);
+  margin-bottom: 4px;
+}
+
+.metrics-eval-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--metrics-text);
+}
+
+.metrics-mini-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 10px 20px 16px;
+}
+
+.metrics-mini-stat {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--metrics-border);
+  background: var(--metrics-surface-soft);
+}
+
+.metrics-mini-stat span {
+  display: block;
+  font-size: 12px;
+  color: var(--metrics-text-muted);
+  margin-bottom: 8px;
+}
+
+.metrics-mini-stat strong {
+  font-size: 18px;
+  color: var(--metrics-text);
+}
+
+.metrics-note-box {
+  margin: 0 20px 20px;
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  color: #1d4ed8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Insights */
+
+.metrics-insights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 18px 20px 20px;
+}
+
+.metrics-insight-card {
+  border: 1px solid var(--metrics-border);
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 18px 16px;
+}
+
+.metrics-insight-card h4 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: var(--metrics-text);
+}
+
+.metrics-insight-card ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--metrics-text-soft);
+}
+
+.metrics-insight-card li {
+  margin-bottom: 10px;
+  line-height: 1.55;
+}
+
+/* Scrollbar */
+
+.metrics-table-wrap::-webkit-scrollbar {
+  height: 8px;
+}
+
+.metrics-table-wrap::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+/* Responsive */
+
+@media (max-width: 1440px) {
+  .metrics-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .metrics-analysis-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1080px) {
+  .metrics-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-insights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics-page {
+    padding: 18px;
+    border-radius: 18px;
+  }
+
+  .metrics-topbar h1 {
+    font-size: 26px;
+  }
+
+  .metrics-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-stat-value {
+    font-size: 30px;
+  }
+
+  .metrics-mini-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-panel-header {
+    padding: 16px 16px 12px;
+  }
+
+  .metrics-topbar-controls {
+    width: 100%;
+  }
+
+  .metrics-filter-chip,
+  .metrics-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

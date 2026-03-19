@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import DateFilter from "./DateFilter";
+import { buildDateFilterParams } from "../utils/dateFilterParams";
 import "./CallLeadDashboard.css";
 
 function formatDate(dateString) {
@@ -64,17 +66,56 @@ function CallLeadDashboard() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [filterError, setFilterError] = useState("");
+
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState(null);
 
+  const [dateFilter, setDateFilter] = useState("all");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+
   useEffect(() => {
-    const fetchLeads = async () => {
+    let ignore = false;
+
+    async function fetchLeads() {
       try {
         setLoading(true);
         setError("");
+        setFilterError("");
 
-        const apiBase = "http://76.13.242.148:4000";
-        const res = await fetch(`${apiBase}/api/call-leads?page=${page}&limit=10`);
+        if (dateFilter === "custom") {
+          if (!customStartDate || !customEndDate) {
+            if (!ignore) setLoading(false);
+            return;
+          }
+
+          if (customStartDate > customEndDate) {
+            if (!ignore) {
+              setFilterError("Start date cannot be after end date.");
+              setLoading(false);
+            }
+            return;
+          }
+        }
+
+        const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+        const params = buildDateFilterParams(
+          dateFilter,
+          customStartDate,
+          customEndDate
+        );
+
+        params.set("page", String(page));
+        params.set("limit", "10");
+
+        const endpoint = `/api/call-leads?${params.toString()}`;
+        const url = apiBase ? `${apiBase}${endpoint}` : endpoint;
+
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
 
         if (!res.ok) {
           throw new Error(`Failed to fetch call leads: ${res.status}`);
@@ -86,18 +127,33 @@ function CallLeadDashboard() {
         }
 
         const data = await res.json();
-        setLeads(Array.isArray(data.items) ? data.items : []);
-        setPagination(data.pagination || null);
+
+        if (!ignore) {
+          setLeads(Array.isArray(data.items) ? data.items : []);
+          setPagination(data.pagination || null);
+        }
       } catch (err) {
-        console.error("Call lead fetch error:", err);
-        setError("Unable to load call leads.");
+        if (!ignore) {
+          console.error("Call lead fetch error:", err);
+          setError(err.message || "Unable to load call leads.");
+          setLeads([]);
+          setPagination(null);
+        }
       } finally {
-        setLoading(false);
+        if (!ignore) setLoading(false);
       }
-    };
+    }
 
     fetchLeads();
-  }, [page]);
+
+    return () => {
+      ignore = true;
+    };
+  }, [page, dateFilter, customStartDate, customEndDate]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [dateFilter, customStartDate, customEndDate]);
 
   const handleExportCsv = () => {
     downloadCsv("call-leads.csv", leads);
@@ -120,13 +176,28 @@ function CallLeadDashboard() {
         </button>
       </div>
 
+      <div className="call-lead-filter-row">
+        <DateFilter
+          value={dateFilter}
+          onChange={setDateFilter}
+          customStartDate={customStartDate}
+          customEndDate={customEndDate}
+          onCustomStartDateChange={setCustomStartDate}
+          onCustomEndDateChange={setCustomEndDate}
+        />
+
+        {filterError ? (
+          <div className="call-lead-inline-error">{filterError}</div>
+        ) : null}
+      </div>
+
       <div className="call-lead-card">
         {loading ? (
           <div className="call-lead-state">Loading call leads...</div>
         ) : error ? (
           <div className="call-lead-state call-lead-error">{error}</div>
         ) : leads.length === 0 ? (
-          <div className="call-lead-state">No call leads found.</div>
+          <div className="call-lead-state">No call leads found for this range.</div>
         ) : (
           <>
             <div className="call-lead-table-wrap">

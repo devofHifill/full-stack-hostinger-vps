@@ -1,0 +1,84 @@
+import express from "express";
+import ChatSession from "../models/ChatSession.js";
+import ChatMessage from "../models/ChatMessage.js";
+
+const router = express.Router();
+
+router.get("/chat-metrics", async (req, res) => {
+  try {
+    const totalSessions = await ChatSession.countDocuments();
+    const totalMessages = await ChatMessage.countDocuments();
+
+    // Safer than using metrics.messageCount because chatmessages is the source of truth
+    const avgMessages =
+      totalSessions > 0
+        ? Number((totalMessages / totalSessions).toFixed(1))
+        : 0;
+
+    // Distinct users:
+    // Prefer email, then phone, then sessionId
+    const sessions = await ChatSession.find(
+      {},
+      {
+        sessionId: 1,
+        visitor: 1,
+        metrics: 1,
+      }
+    ).lean();
+
+    const uniqueUserKeys = new Set();
+
+    for (const session of sessions) {
+      const email = session?.visitor?.email?.trim()?.toLowerCase();
+      const phone = session?.visitor?.phone?.trim();
+      const sessionId = session?.sessionId?.trim();
+
+      if (email) {
+        uniqueUserKeys.add(`email:${email}`);
+      } else if (phone) {
+        uniqueUserKeys.add(`phone:${phone}`);
+      } else if (sessionId) {
+        uniqueUserKeys.add(`session:${sessionId}`);
+      }
+    }
+
+    const users = uniqueUserKeys.size;
+
+    // Simple engaged rate rule:
+    // engaged = session has 2+ messages
+    const engagedSessions = sessions.filter(
+      (s) => (s?.metrics?.messageCount || 0) >= 2
+    ).length;
+
+    const engagedRate =
+      totalSessions > 0
+        ? Number(((engagedSessions / totalSessions) * 100).toFixed(1))
+        : 0;
+
+    // Containment is not actually derivable from your current schema.
+    // Keep 0 for now until you add a proper field.
+    const containment = 0;
+
+    // Intent breakdown cannot be computed unless you store intent
+    const intents = [];
+
+    res.json({
+      metrics: {
+        totalSessions,
+        totalMessages,
+        avgMessages,
+        engagedRate,
+        containment,
+        users,
+      },
+      intents,
+    });
+  } catch (error) {
+    console.error("Error fetching chat metrics:", error);
+    res.status(500).json({
+      error: "Failed to load chat metrics",
+    });
+  }
+});
+
+export default router;

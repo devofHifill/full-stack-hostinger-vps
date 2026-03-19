@@ -291,3 +291,31 @@
   font-size:13px;
   color:#6b7280;
 }
+
+/* ======================================= */
+
+.chat-logs-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chat-logs-inline-error {
+  padding: 10px 12px;
+  border: 1px solid #f3c7c7;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #b42318;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.chat-logs-error-box {
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid #f3c7c7;
+  border-radius: 12px;
+  background: #fff4f4;
+  color: #b42318;
+}

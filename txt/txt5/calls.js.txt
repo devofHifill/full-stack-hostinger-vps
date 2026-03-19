@@ -9,59 +9,14 @@ GET /api/calls?page=1&limit=20
 */
 router.get("/", async (req, res) => {
   try {
+
     const page = Math.max(parseInt(req.query.page || "1", 10), 1);
     const limit = Math.max(parseInt(req.query.limit || "20", 10), 1);
     const skip = (page - 1) * limit;
 
-    const { range = "all", startDate, endDate } = req.query;
+    const totalItems = await Call.countDocuments({});
 
-    /* ---------------- DATE FILTER ---------------- */
-
-    const match = {};
-
-    if (range === "today") {
-      const start = new Date();
-      start.setHours(0, 0, 0, 0);
-
-      const end = new Date();
-      end.setHours(23, 59, 59, 999);
-
-      match.startedAt = { $gte: start, $lte: end };
-    }
-
-    else if (range === "7d") {
-      const end = new Date();
-      const start = new Date();
-      start.setDate(start.getDate() - 7);
-
-      match.startedAt = { $gte: start, $lte: end };
-    }
-
-    else if (range === "30d") {
-      const end = new Date();
-      const start = new Date();
-      start.setDate(start.getDate() - 30);
-
-      match.startedAt = { $gte: start, $lte: end };
-    }
-
-    else if (startDate || endDate) {
-      match.startedAt = {};
-
-      if (startDate) {
-        match.startedAt.$gte = new Date(`${startDate}T00:00:00.000Z`);
-      }
-
-      if (endDate) {
-        match.startedAt.$lte = new Date(`${endDate}T23:59:59.999Z`);
-      }
-    }
-
-    /* ---------------- QUERY ---------------- */
-
-    const totalItems = await Call.countDocuments(match);
-
-    const rows = await Call.find(match)
+    const rows = await Call.find({})
       .sort({ startedAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -86,6 +41,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch calls" });
   }
 });
+
 
 /*
 GET stats

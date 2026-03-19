@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
-import DateFilter from "./DateFilter";
-import { buildDateFilterParams } from "../utils/dateFilterParams";
-import "./ChatLeadDashboard.css";
-
-/* ---------------- HELPERS ---------------- */
+import "./CallLeadDashboard.css";
 
 function formatDate(dateString) {
   if (!dateString) return "—";
+
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return "—";
+
   return date.toLocaleString();
 }
 
@@ -62,116 +60,55 @@ function downloadCsv(filename, rows) {
   window.URL.revokeObjectURL(url);
 }
 
-/* ---------------- COMPONENT ---------------- */
-
-export default function ChatLeadDashboard() {
+function CallLeadDashboard() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filterError, setFilterError] = useState("");
-
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState(null);
 
-  const [dateFilter, setDateFilter] = useState("all");
-  const [customStartDate, setCustomStartDate] = useState("");
-  const [customEndDate, setCustomEndDate] = useState("");
-
-  /* ---------------- FETCH DATA ---------------- */
-
   useEffect(() => {
-    let ignore = false;
-
-    async function fetchLeads() {
+    const fetchLeads = async () => {
       try {
         setLoading(true);
         setError("");
-        setFilterError("");
 
-        /* ----- Custom date validation ----- */
-        if (dateFilter === "custom") {
-          if (!customStartDate || !customEndDate) {
-            if (!ignore) setLoading(false);
-            return;
-          }
-
-          if (customStartDate > customEndDate) {
-            if (!ignore) {
-              setFilterError("Start date cannot be after end date.");
-              setLoading(false);
-            }
-            return;
-          }
-        }
-
-        const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
-
-        const params = buildDateFilterParams(
-          dateFilter,
-          customStartDate,
-          customEndDate
-        );
-
-        params.set("page", String(page));
-        params.set("limit", "10");
-
-        const endpoint = `/api/chat-leads?${params.toString()}`;
-        const url = apiBase ? `${apiBase}${endpoint}` : endpoint;
-
-        const res = await fetch(url, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        const apiBase = "http://76.13.242.148:4000";
+        const res = await fetch(`${apiBase}/api/call-leads?page=${page}&limit=10`);
 
         if (!res.ok) {
-          throw new Error(`Failed to fetch chat leads: ${res.status}`);
+          throw new Error(`Failed to fetch call leads: ${res.status}`);
+        }
+
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          throw new Error(`Expected JSON but received ${contentType}`);
         }
 
         const data = await res.json();
-
-        if (!ignore) {
-          setLeads(Array.isArray(data.items) ? data.items : []);
-          setPagination(data.pagination || null);
-        }
+        setLeads(Array.isArray(data.items) ? data.items : []);
+        setPagination(data.pagination || null);
       } catch (err) {
-        if (!ignore) {
-          console.error("Chat lead fetch error:", err);
-          setError("Unable to load chat leads.");
-          setLeads([]);
-          setPagination(null);
-        }
+        console.error("Call lead fetch error:", err);
+        setError("Unable to load call leads.");
       } finally {
-        if (!ignore) setLoading(false);
+        setLoading(false);
       }
-    }
+    };
 
     fetchLeads();
-
-    return () => {
-      ignore = true;
-    };
-  }, [page, dateFilter, customStartDate, customEndDate]);
-
-  /* Reset page on filter change */
-  useEffect(() => {
-    setPage(1);
-  }, [dateFilter, customStartDate, customEndDate]);
-
-  /* ---------------- ACTIONS ---------------- */
+  }, [page]);
 
   const handleExportCsv = () => {
-    downloadCsv("chat-leads.csv", leads);
+    downloadCsv("call-leads.csv", leads);
   };
 
-  /* ---------------- UI ---------------- */
-
   return (
-    <section className="chat-lead-page">
-      {/* HEADER */}
-      <div className="chat-lead-header">
+    <section className="call-lead-page">
+      <div className="call-lead-header">
         <div>
-          <h1>Chat Leads</h1>
-          <p>Qualified leads captured from chat sessions.</p>
+          <h1>Call Leads</h1>
+          <p>Qualified leads captured from call sessions.</p>
         </div>
 
         <button
@@ -183,37 +120,17 @@ export default function ChatLeadDashboard() {
         </button>
       </div>
 
-      {/* FILTER */}
-      <div className="chat-lead-filter-row">
-        <DateFilter
-          value={dateFilter}
-          onChange={setDateFilter}
-          customStartDate={customStartDate}
-          customEndDate={customEndDate}
-          onCustomStartDateChange={setCustomStartDate}
-          onCustomEndDateChange={setCustomEndDate}
-        />
-
-        {filterError && (
-          <div className="chat-lead-inline-error">{filterError}</div>
-        )}
-      </div>
-
-      {/* CONTENT */}
-      <div className="chat-lead-card">
+      <div className="call-lead-card">
         {loading ? (
-          <div className="chat-lead-state">Loading chat leads...</div>
+          <div className="call-lead-state">Loading call leads...</div>
         ) : error ? (
-          <div className="chat-lead-state chat-lead-error">{error}</div>
+          <div className="call-lead-state call-lead-error">{error}</div>
         ) : leads.length === 0 ? (
-          <div className="chat-lead-state">
-            No chat leads found for this range.
-          </div>
+          <div className="call-lead-state">No call leads found.</div>
         ) : (
           <>
-            {/* TABLE */}
-            <div className="chat-lead-table-wrap">
-              <table className="chat-lead-table">
+            <div className="call-lead-table-wrap">
+              <table className="call-lead-table">
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -226,7 +143,6 @@ export default function ChatLeadDashboard() {
                     <th>Created At</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {leads.map((lead) => (
                     <tr key={lead._id}>
@@ -244,7 +160,6 @@ export default function ChatLeadDashboard() {
               </table>
             </div>
 
-            {/* PAGINATION */}
             {pagination && (
               <div className="table-pagination">
                 <button
@@ -272,3 +187,5 @@ export default function ChatLeadDashboard() {
     </section>
   );
 }
+
+export default CallLeadDashboard;

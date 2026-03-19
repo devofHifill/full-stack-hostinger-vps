@@ -6,6 +6,7 @@ import ChatLogsPage from "./components/pages/ChatLogsPage";
 import ChatLeadDashboard from "./components/ChatLeadDashboard";
 import CallLeadDashboard from "./components/CallLeadDashboard";
 import MetricsPage from "./components/pages/MetricsPage";
+import OutboundContactsDashboard from "./components/OutboundContactsDashboard";
 
 
 
@@ -24,7 +25,7 @@ export default function App() {
           <Route path="/call-leads" element={<CallLeadDashboard />} />          
           <Route path="/chat-leads" element={<ChatLeadDashboard />} />
 
-          <Route path="/files" element={<div>File Upload Page</div>} />
+          <Route path="/files" element={<OutboundContactsDashboard />} />
         </Route>
       </Routes>
     </BrowserRouter>

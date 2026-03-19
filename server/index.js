@@ -13,6 +13,8 @@ import chatLeadRoutes from "./routes/chatLeadRoutes.js";
 import callLeadRoutes from "./routes/callLeadRoutes.js";
 import callMetricsRoutes from "./routes/callMetricsRoutes.js";
 import chatMetricsRoutes from "./routes/chatMetricsRoutes.js";
+import outboundContactsRoutes from "./routes/outboundContacts.js";
+import outboundContactUploadRoutes from "./routes/outboundContactUpload.js";
 
 
 
@@ -52,6 +54,8 @@ app.use("/api/chat-leads", chatLeadRoutes);
 app.use("/api/call-leads", callLeadRoutes);
 app.use("/api", callMetricsRoutes);
 app.use("/api", chatMetricsRoutes);
+app.use("/api/outbound-contacts", outboundContactsRoutes);
+app.use("/api/outbound-contacts", outboundContactUploadRoutes);
 
 
 

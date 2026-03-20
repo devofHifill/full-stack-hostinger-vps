@@ -15,6 +15,8 @@ import callMetricsRoutes from "./routes/callMetricsRoutes.js";
 import chatMetricsRoutes from "./routes/chatMetricsRoutes.js";
 import outboundContactsRoutes from "./routes/outboundContacts.js";
 import outboundContactUploadRoutes from "./routes/outboundContactUpload.js";
+import workflowScheduleRoutes from "./routes/workflowScheduleRoutes.js";
+import workflowExecutionRoutes from "./routes/workflowExecutionRoutes.js";
 
 
 
@@ -56,6 +58,8 @@ app.use("/api", callMetricsRoutes);
 app.use("/api", chatMetricsRoutes);
 app.use("/api/outbound-contacts", outboundContactsRoutes);
 app.use("/api/outbound-contacts", outboundContactUploadRoutes);
+app.use("/api/workflow-schedules", workflowScheduleRoutes);
+app.use("/api/workflow-executions", workflowExecutionRoutes);
 
 
 

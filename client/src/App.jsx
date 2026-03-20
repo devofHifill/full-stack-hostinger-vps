@@ -7,6 +7,8 @@ import ChatLeadDashboard from "./components/ChatLeadDashboard";
 import CallLeadDashboard from "./components/CallLeadDashboard";
 import MetricsPage from "./components/pages/MetricsPage";
 import OutboundContactsDashboard from "./components/OutboundContactsDashboard";
+import WorkflowSchedulerDashboard from "./components/WorkflowSchedulerDashboard";
+import LoanOfficersDashboard from "./components/LoanOfficersDashboard";
 
 
 
@@ -26,6 +28,10 @@ export default function App() {
           <Route path="/chat-leads" element={<ChatLeadDashboard />} />
 
           <Route path="/files" element={<OutboundContactsDashboard />} />
+
+          <Route path="/schedular" element={<WorkflowSchedulerDashboard />} />
+
+          <Route path="/officers" element={<LoanOfficersDashboard /> } />
         </Route>
       </Routes>
     </BrowserRouter>

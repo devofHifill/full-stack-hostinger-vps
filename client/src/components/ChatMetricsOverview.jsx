@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
+<<<<<<< HEAD
 import "./styles/ChatMetricsOverview.css";
 import DateFilter from "./DateFilter";
 import { buildDateFilterParams } from "../utils/dateFilterParams";
 import { useApiClient } from "../hooks/useApiClient";
+=======
+import "./ChatMetricsOverview.css";
+import DateFilter from "./DateFilter";
+import { buildDateFilterParams } from "../utils/dateFilterParams";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 function StatCard({ title, value, subtext }) {
   return (
@@ -41,8 +47,11 @@ export default function ChatMetricsOverview() {
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
 
+<<<<<<< HEAD
   const { requestJson } = useApiClient();
 
+=======
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
   useEffect(() => {
     let ignore = false;
 
@@ -67,17 +76,39 @@ export default function ChatMetricsOverview() {
           }
         }
 
+<<<<<<< HEAD
+=======
+        const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
         const params = buildDateFilterParams(
           dateFilter,
           customStartDate,
           customEndDate
         );
 
+<<<<<<< HEAD
         const query = params.toString()
           ? `/chat-metrics?${params.toString()}`
           : "/chat-metrics";
 
         const data = await requestJson(query);
+=======
+        const endpoint = `/api/chat-metrics${
+          params.toString() ? `?${params.toString()}` : ""
+        }`;
+        const url = apiBase ? `${apiBase}${endpoint}` : endpoint;
+
+        const response = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
         if (!ignore) {
           setChatMetrics({
@@ -101,7 +132,11 @@ export default function ChatMetricsOverview() {
       } catch (err) {
         if (!ignore) {
           console.error("Failed to load chat metrics:", err);
+<<<<<<< HEAD
           setError(err.message || "Unable to load chat metrics.");
+=======
+          setError("Unable to load chat metrics.");
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
           setChatMetrics({
             totalSessions: 0,
             totalMessages: 0,

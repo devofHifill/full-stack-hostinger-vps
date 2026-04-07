@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import "./Footer.css";
 
 export default function Footer() {
@@ -16,3 +17,12 @@ export default function Footer() {
     </footer>
   );
 }
+=======
+import React from 'react'
+
+export default function Footer() {
+  return (
+    <div>Footer</div>
+  )
+}
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de

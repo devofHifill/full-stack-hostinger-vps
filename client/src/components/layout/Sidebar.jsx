@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import "./Sidebar.css";
@@ -216,4 +217,99 @@ export default function Sidebar({ open, closeSidebar }) {
       </div>
     </aside>
   );
+=======
+import { NavLink } from "react-router-dom";
+
+export default function Sidebar({ open, closeSidebar }) {
+
+  return (
+
+    <aside className={`sidebar ${open ? "open" : ""}`}>
+
+      <div className="sidebar-header">
+
+        <h2 className="logo">SEBVM</h2>
+
+        <button
+          className="sidebar-close"
+          onClick={closeSidebar}
+        >
+          ✕
+        </button>
+
+      </div>
+
+      <div className="org">it@sebmtg.com's Org</div>
+
+      <div className="search">
+        <input placeholder="Search" />
+      </div>
+
+      <nav>
+
+        <NavLink
+          to="/calls"
+          onClick={closeSidebar}
+          className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        >
+          Call Logs
+        </NavLink>
+
+        <NavLink
+          to="/chat"
+          onClick={closeSidebar}
+          className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        >
+          Chat Logs
+        </NavLink>
+
+
+
+        <NavLink
+          to="/call-leads"
+          onClick={closeSidebar}
+          className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        >
+          Call Lead
+        </NavLink>
+
+        <NavLink
+          to="/chat-leads"
+          onClick={closeSidebar}
+          className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        >
+          Chat Lead
+        </NavLink>
+
+        <NavLink
+          to="/files"
+          onClick={closeSidebar}
+          className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        >
+          File Upload
+        </NavLink>
+
+        <NavLink
+          to="/schedular"
+          onClick={closeSidebar}
+          className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        >
+          WorkFlow schedular
+        </NavLink>
+
+                <NavLink
+          to="/officers"
+          onClick={closeSidebar}
+          className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+        >
+          Loan Officers 
+        </NavLink>
+
+      </nav>
+
+    </aside>
+
+  );
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 }

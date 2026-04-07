@@ -1,8 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
+<<<<<<< HEAD
 import "./styles/CallMetricsOverview.css";
 import DateFilter from "./DateFilter";
 import { buildDateFilterParams } from "../utils/dateFilterParams";
 import { useApiClient } from "../hooks/useApiClient";
+=======
+import "./CallMetricsOverview.css";
+import DateFilter from "./DateFilter";
+import { buildDateFilterParams } from "../utils/dateFilterParams";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 function formatCurrency(value) {
   return `$${Number(value || 0).toFixed(2)}`;
@@ -102,9 +108,12 @@ export default function CallMetricsOverview() {
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
 
+<<<<<<< HEAD
   const { requestJson } = useApiClient();
   // const { logout } = useAuth();
 
+=======
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
   useEffect(() => {
     let ignore = false;
 
@@ -131,17 +140,39 @@ export default function CallMetricsOverview() {
           }
         }
 
+<<<<<<< HEAD
+=======
+        const baseUrl = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
         const params = buildDateFilterParams(
           dateFilter,
           customStartDate,
           customEndDate
         );
 
+<<<<<<< HEAD
         const query = params.toString()
           ? `/call-metrics?${params.toString()}`
           : "/call-metrics";
 
         const data = await requestJson(query);
+=======
+        const endpoint = `/api/call-metrics${
+          params.toString() ? `?${params.toString()}` : ""
+        }`;
+        const url = baseUrl ? `${baseUrl}${endpoint}` : endpoint;
+
+        const response = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
         if (!ignore) {
           setPayload({
@@ -255,6 +286,7 @@ export default function CallMetricsOverview() {
     return flags.length
       ? flags
       : [
+<<<<<<< HEAD
         {
           label: "No major quality flags detected",
           value: "Healthy",
@@ -262,6 +294,15 @@ export default function CallMetricsOverview() {
           dotClass: "metrics-dot-green",
         },
       ];
+=======
+          {
+            label: "No major quality flags detected",
+            value: "Healthy",
+            meta: "Current evaluation looks stable",
+            dotClass: "metrics-dot-green",
+          },
+        ];
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
   }, [assistantRows, endedReasons, successBreakdown, totalCalls]);
 
   const knownEvaluations =
@@ -439,8 +480,14 @@ export default function CallMetricsOverview() {
                         <td>
                           <div className="metrics-assistant-cell">
                             <span
+<<<<<<< HEAD
                               className={`metrics-dot metrics-dot-${item.tone || "default"
                                 }`}
+=======
+                              className={`metrics-dot metrics-dot-${
+                                item.tone || "default"
+                              }`}
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
                             />
                             <span>{item.reason || "Unknown"}</span>
                           </div>
@@ -545,8 +592,14 @@ export default function CallMetricsOverview() {
                       <td>
                         <div className="metrics-assistant-cell">
                           <span
+<<<<<<< HEAD
                             className={`metrics-dot metrics-dot-${row.tone || "default"
                               }`}
+=======
+                            className={`metrics-dot metrics-dot-${
+                              row.tone || "default"
+                            }`}
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
                           />
                           <span>{row.assistant || "Unknown"}</span>
                         </div>
@@ -558,12 +611,22 @@ export default function CallMetricsOverview() {
                       <td>{formatCurrency(row.avgCostPerCall)}</td>
                       <td>
                         <span
+<<<<<<< HEAD
                           className={`metrics-pill ${Number(row.successRate || 0) >= 20
                             ? "metrics-pill-success"
                             : Number(row.successRate || 0) >= 12
                               ? "metrics-pill-warning"
                               : "metrics-pill-danger"
                             }`}
+=======
+                          className={`metrics-pill ${
+                            Number(row.successRate || 0) >= 20
+                              ? "metrics-pill-success"
+                              : Number(row.successRate || 0) >= 12
+                              ? "metrics-pill-warning"
+                              : "metrics-pill-danger"
+                          }`}
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
                         >
                           {formatPercent(row.successRate)}
                         </span>

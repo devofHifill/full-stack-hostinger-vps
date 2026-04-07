@@ -17,9 +17,13 @@ import outboundContactsRoutes from "./routes/outboundContacts.js";
 import outboundContactUploadRoutes from "./routes/outboundContactUpload.js";
 import workflowScheduleRoutes from "./routes/workflowScheduleRoutes.js";
 import workflowExecutionRoutes from "./routes/workflowExecutionRoutes.js";
+<<<<<<< HEAD
 import loanOfficerRoutes from "./routes/loanOfficerRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import authMiddleware from "./middleware/authMiddleware.js";
+=======
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 
 const app = express();   // 👈 MUST be before app.use()
@@ -71,6 +75,7 @@ app.use("/api/auth", authRoutes);
 
 // public routes
 app.use("/api/webhook", webhookRoutes);
+<<<<<<< HEAD
 
 // protected routes
 app.use("/api/calls", authMiddleware, callsRoutes);
@@ -84,6 +89,19 @@ app.use("/api/outbound-contacts", authMiddleware, outboundContactUploadRoutes);
 app.use("/api/workflow-schedules", authMiddleware, workflowScheduleRoutes);
 app.use("/api/workflow-executions", authMiddleware, workflowExecutionRoutes);
 app.use("/api/loan-officers", authMiddleware, loanOfficerRoutes);
+=======
+app.use("/api/calls", callsRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/chat-leads", chatLeadRoutes);
+app.use("/api/call-leads", callLeadRoutes);
+app.use("/api", callMetricsRoutes);
+app.use("/api", chatMetricsRoutes);
+app.use("/api/outbound-contacts", outboundContactsRoutes);
+app.use("/api/outbound-contacts", outboundContactUploadRoutes);
+app.use("/api/workflow-schedules", workflowScheduleRoutes);
+app.use("/api/workflow-executions", workflowExecutionRoutes);
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 
 // Health route

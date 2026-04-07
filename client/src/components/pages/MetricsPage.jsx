@@ -2,7 +2,11 @@ import React, { useState } from "react";
 
 import CallMetricsOverview from "../CallMetricsOverview";
 import ChatMetricsOverview from "../ChatMetricsOverview";
+<<<<<<< HEAD
 import "../styles/MetricsSwitcher.css";
+=======
+import "../MetricsSwitcher.css";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 export default function MetricsPage() {
 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import "./Header.css";
 
 export default function Header({ toggleSidebar }) {
@@ -32,4 +33,28 @@ export default function Header({ toggleSidebar }) {
       </div>
     </header>
   );
+=======
+export default function Header({ toggleSidebar }) {
+
+  return (
+
+    <div className="header">
+
+      <button
+        className="hamburger"
+        onClick={toggleSidebar}
+      >
+        ☰
+      </button>
+
+      <div>
+        <h1>SEB Voice Monitor</h1>
+        <p>Monitor call and chat activity</p>
+      </div>
+
+    </div>
+
+  );
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 }

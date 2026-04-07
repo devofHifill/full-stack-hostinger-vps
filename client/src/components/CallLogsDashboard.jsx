@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 import CallDetailsModal from "./CallDetailsModal";
 import DateFilter from "./DateFilter";
@@ -7,6 +8,12 @@ import { useApiClient } from "../hooks/useApiClient";
 import { buildDateFilterParams } from "../utils/dateFilterParams";
 // import "./CallLogsDashboard.css";
 import "./styles/CallLogsDashboard.css";
+=======
+import CallDetailsModal from "./CallDetailsModal";
+import DateFilter from "./DateFilter";
+import { buildDateFilterParams } from "../utils/dateFilterParams";
+import "./CallLogsDashboard.css";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 export default function CallLogsDashboard() {
   const [rows, setRows] = useState([]);
@@ -22,6 +29,7 @@ export default function CallLogsDashboard() {
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
 
+<<<<<<< HEAD
   // const { token, logout } = useAuth();
   const { requestJson } = useApiClient();
   const { logout } = useAuth();
@@ -33,6 +41,8 @@ export default function CallLogsDashboard() {
     navigate("/login");
   }
 
+=======
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
   useEffect(() => {
     let ignore = false;
 
@@ -56,6 +66,7 @@ export default function CallLogsDashboard() {
             return;
           }
         }
+<<<<<<< HEAD
         /////////////////////////////////////////////////////////////////////
         // const API = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
         // const params = buildDateFilterParams(
@@ -84,6 +95,10 @@ export default function CallLogsDashboard() {
 
         // const data = await res.json();
 
+=======
+
+        const API = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
         const params = buildDateFilterParams(
           dateFilter,
           customStartDate,
@@ -93,18 +108,38 @@ export default function CallLogsDashboard() {
         params.set("page", String(page));
         params.set("limit", "20");
 
+<<<<<<< HEAD
         const data = await requestJson(`/calls?${params.toString()}`);
 
         ////////////////////////////////////
+=======
+        const endpoint = `/api/calls?${params.toString()}`;
+        const url = API ? `${API}${endpoint}` : endpoint;
+
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Request failed with status ${res.status}`);
+        }
+
+        const data = await res.json();
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
         const mapped = (data.items || []).map((call) => ({
           id: call.callId,
           assistant:
             call.assistantName ||
             call.assistant ||
+<<<<<<< HEAD
             (call.direction === "outbound"
               ? "Imani (Outbound)"
               : "Imani (Inbound)"),
+=======
+            (call.direction === "outbound" ? "Imani (Outbound)" : "Imani (Inbound)"),
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
           assistantPhone: call.assistantPhone || "-",
           customerPhone: call.customer?.phone || "-",
           type: call.direction === "outbound" ? "Outbound" : "Inbound",
@@ -113,10 +148,17 @@ export default function CallLogsDashboard() {
             call.normalizedOutcome === "completed"
               ? "Success"
               : call.normalizedOutcome === "failed"
+<<<<<<< HEAD
                 ? "Fail"
                 : call.normalizedOutcome === "no-answer"
                   ? "No Answer"
                   : "-",
+=======
+              ? "Fail"
+              : call.normalizedOutcome === "no-answer"
+              ? "No Answer"
+              : "-",
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
           start: call.startedAt
             ? new Date(call.startedAt).toLocaleString()
             : "N/A",
@@ -169,10 +211,13 @@ export default function CallLogsDashboard() {
               onCustomEndDateChange={setCustomEndDate}
             />
 
+<<<<<<< HEAD
             <button className="dashboard-logout-btn" onClick={handleLogout}>
               Logout
             </button>
 
+=======
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
             {filterError ? (
               <div className="call-logs-inline-error">{filterError}</div>
             ) : null}
@@ -222,10 +267,14 @@ export default function CallLogsDashboard() {
                       <td>{row.customerPhone}</td>
 
                       <td>
+<<<<<<< HEAD
                         <span
                           className={`badge ${row.type === "Inbound" ? "inbound" : "outbound"
                             }`}
                         >
+=======
+                        <span className={`badge ${row.type === "Inbound" ? "inbound" : "outbound"}`}>
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
                           ☎ {row.type}
                         </span>
                       </td>
@@ -238,6 +287,7 @@ export default function CallLogsDashboard() {
 
                       <td>
                         <span
+<<<<<<< HEAD
                           className={`badge ${row.success === "Success"
                             ? "success"
                             : row.success === "Fail"
@@ -246,6 +296,17 @@ export default function CallLogsDashboard() {
                                 ? "no-answer"
                                 : ""
                             }`}
+=======
+                          className={`badge ${
+                            row.success === "Success"
+                              ? "success"
+                              : row.success === "Fail"
+                              ? "fail"
+                              : row.success === "No Answer"
+                              ? "no-answer"
+                              : ""
+                          }`}
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
                         >
                           {row.success}
                         </span>
@@ -294,6 +355,10 @@ export default function CallLogsDashboard() {
   );
 }
 
+<<<<<<< HEAD
+=======
+/* Helper for badge colors */
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 function getReasonClass(reason) {
   if (!reason) return "";
 

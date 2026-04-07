@@ -1,5 +1,9 @@
 import React from "react";
+<<<<<<< HEAD
 import "./styles/DateFilter.css";
+=======
+import "./DateFilter.css";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 export default function DateFilter({
   value = "all",

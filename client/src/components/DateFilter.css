@@ -1,0 +1,88 @@
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.date-filter__select-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.date-filter__select {
+  height: 40px;
+  min-width: 180px;
+  padding: 0 14px;
+  border: 1px solid #d7deea;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+}
+
+.date-filter__select:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.date-filter__select:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.date-filter__custom-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.date-filter__input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d7deea;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 14px;
+  outline: none;
+}
+
+.date-filter__input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.date-filter__input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .date-filter {
+    width: 100%;
+  }
+
+  .date-filter__select-wrap {
+    width: 100%;
+  }
+
+  .date-filter__select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .date-filter__custom-row {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-filter__input {
+    width: 100%;
+  }
+}

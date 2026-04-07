@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import DateFilter from "./DateFilter";
 import { buildDateFilterParams } from "../utils/dateFilterParams";
+<<<<<<< HEAD
 import "./styles/CallLeadDashboard.css";
 import { useApiClient } from "../hooks/useApiClient";
+=======
+import "./CallLeadDashboard.css";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 function formatDate(dateString) {
   if (!dateString) return "—";
@@ -75,8 +79,11 @@ function CallLeadDashboard() {
   const [dateFilter, setDateFilter] = useState("all");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
+<<<<<<< HEAD
   const { requestJson } = useApiClient();
 
+=======
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
   useEffect(() => {
     let ignore = false;
@@ -102,6 +109,10 @@ function CallLeadDashboard() {
           }
         }
 
+<<<<<<< HEAD
+=======
+        const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
         const params = buildDateFilterParams(
           dateFilter,
           customStartDate,
@@ -111,10 +122,32 @@ function CallLeadDashboard() {
         params.set("page", String(page));
         params.set("limit", "10");
 
+<<<<<<< HEAD
         const data = await requestJson(`/call-leads?${params.toString()}`, {
           method: "GET",
         });
 
+=======
+        const endpoint = `/api/call-leads?${params.toString()}`;
+        const url = apiBase ? `${apiBase}${endpoint}` : endpoint;
+
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch call leads: ${res.status}`);
+        }
+
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          throw new Error(`Expected JSON but received ${contentType}`);
+        }
+
+        const data = await res.json();
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
         if (!ignore) {
           setLeads(Array.isArray(data.items) ? data.items : []);
           setPagination(data.pagination || null);

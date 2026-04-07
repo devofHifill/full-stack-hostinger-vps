@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
 import { useApiClient } from "../hooks/useApiClient";
 import "./styles/OutboundContactsDashboard.css";
 
+=======
+import React, { useEffect, useMemo, useState } from "react";
+import "./OutboundContactsDashboard.css";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://76.13.242.148:4000";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 const STATUS_OPTIONS = [
   "all",
@@ -55,8 +62,11 @@ export default function OutboundContactsDashboard() {
   const [previewData, setPreviewData] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [duplicateMode, setDuplicateMode] = useState("skip");
+<<<<<<< HEAD
   const { requestJson } = useApiClient();
 
+=======
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
   const hasSelected = selectedIds.length > 0;
 
@@ -72,10 +82,21 @@ export default function OutboundContactsDashboard() {
       if (search.trim()) params.set("search", search.trim());
       if (status !== "all") params.set("status", status);
 
+<<<<<<< HEAD
       const data = await requestJson(
         `/outbound-contacts?${params.toString()}`,
         { method: "GET" }
       );
+=======
+      const res = await fetch(
+        `${API_BASE}/api/outbound-contacts?${params.toString()}`
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to fetch outbound contacts");
+      }
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
       setRows(Array.isArray(data.rows) ? data.rows : []);
       setTotal(data.total || 0);
@@ -144,6 +165,7 @@ export default function OutboundContactsDashboard() {
         notes: form.notes,
       };
 
+<<<<<<< HEAD
 
       await requestJson(
         isEditMode
@@ -154,6 +176,26 @@ export default function OutboundContactsDashboard() {
           body: payload,
         }
       );
+=======
+      const url = isEditMode
+        ? `${API_BASE}/api/outbound-contacts/${editingId}`
+        : `${API_BASE}/api/outbound-contacts`;
+
+      const method = isEditMode ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to save contact");
+      }
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       closeModal();
       fetchContacts();
     } catch (err) {
@@ -171,10 +213,23 @@ export default function OutboundContactsDashboard() {
       setActionLoading(true);
       setError("");
 
+<<<<<<< HEAD
       await requestJson(`/outbound-contacts/${id}`, {
         method: "DELETE",
       });
 
+=======
+      const res = await fetch(`${API_BASE}/api/outbound-contacts/${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete contact");
+      }
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       if (rows.length === 1 && page > 1) {
         setPage((prev) => prev - 1);
       } else {
@@ -216,10 +271,25 @@ export default function OutboundContactsDashboard() {
       setActionLoading(true);
       setError("");
 
+<<<<<<< HEAD
       await requestJson(`/outbound-contacts/bulk-delete`, {
         method: "POST",
         body: { ids: selectedIds },
       });
+=======
+      const res = await fetch(`${API_BASE}/api/outbound-contacts/bulk-delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to bulk delete contacts");
+      }
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       fetchContacts();
     } catch (err) {
       setError(err.message || "Failed to bulk delete contacts");
@@ -235,6 +305,7 @@ export default function OutboundContactsDashboard() {
       setActionLoading(true);
       setError("");
 
+<<<<<<< HEAD
       await requestJson(`/outbound-contacts/bulk-status`, {
         method: "POST",
         body: {
@@ -242,6 +313,23 @@ export default function OutboundContactsDashboard() {
           status: nextStatus,
         },
       });
+=======
+      const res = await fetch(`${API_BASE}/api/outbound-contacts/bulk-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ids: selectedIds,
+          status: nextStatus,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update status");
+      }
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       fetchContacts();
     } catch (err) {
       setError(err.message || "Failed to update status");
@@ -270,7 +358,11 @@ export default function OutboundContactsDashboard() {
   }
 
   async function handleFileUpload(e) {
+<<<<<<< HEAD
     const file = e.target?.files?.[0];
+=======
+    const file = e.target.files?.[0];
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
     if (!file) return;
 
     try {
@@ -280,6 +372,7 @@ export default function OutboundContactsDashboard() {
       const formData = new FormData();
       formData.append("file", file);
 
+<<<<<<< HEAD
       const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
       const token = localStorage.getItem("token");
 
@@ -298,11 +391,26 @@ export default function OutboundContactsDashboard() {
 
       if (!res.ok) {
         throw new Error(data.error || `Request failed with status ${res.status}`);
+=======
+      const res = await fetch(
+        `${API_BASE}/api/outbound-contacts/upload-preview`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to preview file");
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       }
 
       setPreviewData(data);
       setShowPreviewModal(true);
     } catch (err) {
+<<<<<<< HEAD
       console.error("Upload preview error:", err);
       setError(err.message || "Failed to upload file");
     } finally {
@@ -310,6 +418,12 @@ export default function OutboundContactsDashboard() {
       if (e.target) {
         e.target.value = "";
       }
+=======
+      setError(err.message || "Failed to upload file");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
     }
   }
 
@@ -320,6 +434,7 @@ export default function OutboundContactsDashboard() {
       setUploading(true);
       setError("");
 
+<<<<<<< HEAD
       const data = await requestJson(`/outbound-contacts/import`, {
         method: "POST",
         body: {
@@ -328,6 +443,23 @@ export default function OutboundContactsDashboard() {
         },
       });
 
+=======
+      const res = await fetch(`${API_BASE}/api/outbound-contacts/import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          duplicateMode,
+          rows: previewData.rows,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to import rows");
+      }
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       setShowPreviewModal(false);
       setPreviewData(null);
       setDuplicateMode("skip");
@@ -632,8 +764,13 @@ export default function OutboundContactsDashboard() {
                   {actionLoading
                     ? "Saving..."
                     : isEditMode
+<<<<<<< HEAD
                       ? "Update Contact"
                       : "Create Contact"}
+=======
+                    ? "Update Contact"
+                    : "Create Contact"}
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
                 </button>
               </div>
             </form>
@@ -711,8 +848,14 @@ export default function OutboundContactsDashboard() {
                       <td>{row.phone || "—"}</td>
                       <td>
                         <span
+<<<<<<< HEAD
                           className={`status-badge ${row.isValid ? "status-new" : "status-failed"
                             }`}
+=======
+                          className={`status-badge ${
+                            row.isValid ? "status-new" : "status-failed"
+                          }`}
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
                         >
                           {row.isValid ? "valid" : "invalid"}
                         </span>

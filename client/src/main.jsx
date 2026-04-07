@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 // import { StrictMode } from 'react'
 // import { createRoot } from 'react-dom/client'
 // import './index.css'
 // import App from './App.jsx'
 // import "./components/CallLogsDashboard.css";
+=======
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+import "./components/CallLogsDashboard.css";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 // createRoot(document.getElementById('root')).render(
 //   <StrictMode>

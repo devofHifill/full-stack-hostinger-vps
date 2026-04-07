@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import TranscriptViewer from "./TranscriptViewer";
+<<<<<<< HEAD
 import { useApiClient } from "../hooks/useApiClient";
+=======
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 
 export default function CallDetailsModal({ callId, onClose }) {
   const [call, setCall] = useState(null);
   const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
   const { requestJson } = useApiClient();
 
 useEffect(() => {
@@ -22,6 +26,29 @@ useEffect(() => {
 
   if (callId) fetchCall();
 }, [callId]);
+=======
+
+  useEffect(() => {
+    async function fetchCall() {
+      try {
+        const res = await fetch(`http://76.13.242.148:4000/api/calls/${callId}`);
+
+        if (!res.ok) {
+          throw new Error("API request failed");
+        }
+
+        const data = await res.json();
+        setCall(data);
+      } catch (err) {
+        console.error("Failed to fetch call details", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (callId) fetchCall();
+  }, [callId]);
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
   if (!callId) return null;
 

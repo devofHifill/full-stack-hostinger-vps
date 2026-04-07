@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
 import { useApiClient } from "../hooks/useApiClient";
 import "./styles/LoanOfficersDashboard.css";
@@ -5,13 +6,52 @@ import "./styles/LoanOfficersDashboard.css";
 
 const emptyForm = {
   _id: null,
+=======
+import React, { useMemo, useState } from "react";
+import "./LoanOfficersDashboard.css";
+
+const initialOfficers = [
+  {
+    id: 1,
+    name: "Regie Ford",
+    title: "Mortgage Broker & CEO",
+    nmls: "1508332",
+    appointmentUrl: "https://calendly.com/regieford",
+    profileUrl: "https://www.sebmtg.com/regie-ford/",
+  },
+  {
+    id: 2,
+    name: "Brenda Jackson",
+    title: "Loan Officer",
+    nmls: "1914547",
+    appointmentUrl:
+      "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ1Fu9bVYDMqebHBLFougw5HNrkfmWP8xaHU7k0Y9GUq_0YpkzKigEUi7wjPTpaIBaBvtWVrKAHI",
+    profileUrl: "https://www.sebmtg.com/brenda-jackson/",
+  },
+  {
+    id: 3,
+    name: "David Rudolph",
+    title: "Loan Officer",
+    nmls: "349507",
+    appointmentUrl:
+      "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0YxCzgIanD0Yq6tX7Sf03P5vPxh5mpzjvM8_FXC-DE7YVwY16AUozwKtAbHEI-IctmApELi4lx",
+    profileUrl: "https://www.sebmtg.com/team/david-rudolph/",
+  },
+];
+
+const emptyForm = {
+  id: null,
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
   name: "",
   title: "",
   nmls: "",
   appointmentUrl: "",
   profileUrl: "",
+<<<<<<< HEAD
   sortOrder: 0,
   isActive: true,
+=======
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 };
 
 function escapeHtml(str = "") {
@@ -24,6 +64,7 @@ function escapeHtml(str = "") {
 }
 
 export default function LoanOfficersDashboard() {
+<<<<<<< HEAD
   const [officers, setOfficers] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [isEditing, setIsEditing] = useState(false);
@@ -60,12 +101,25 @@ export default function LoanOfficersDashboard() {
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
+=======
+  const [officers, setOfficers] = useState(initialOfficers);
+  const [form, setForm] = useState(emptyForm);
+  const [isEditing, setIsEditing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
     }));
   };
 
   const resetForm = () => {
     setForm(emptyForm);
     setIsEditing(false);
+<<<<<<< HEAD
     setError("");
   };
 
@@ -80,10 +134,17 @@ export default function LoanOfficersDashboard() {
       sortOrder: officer.sortOrder || 0,
       isActive: officer.isActive ?? true,
     });
+=======
+  };
+
+  const handleEdit = (officer) => {
+    setForm(officer);
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
     setIsEditing(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+<<<<<<< HEAD
   const handleDelete = async (id) => {
     const ok = window.confirm("Are you sure you want to delete this loan officer?");
     if (!ok) return;
@@ -105,6 +166,22 @@ export default function LoanOfficersDashboard() {
   };
 
   const validateForm = () => {
+=======
+  const handleDelete = (id) => {
+    const ok = window.confirm("Are you sure you want to delete this loan officer?");
+    if (!ok) return;
+
+    setOfficers((prev) => prev.filter((item) => item.id !== id));
+
+    if (form.id === id) {
+      resetForm();
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
     if (
       !form.name.trim() ||
       !form.title.trim() ||
@@ -112,6 +189,7 @@ export default function LoanOfficersDashboard() {
       !form.appointmentUrl.trim() ||
       !form.profileUrl.trim()
     ) {
+<<<<<<< HEAD
       return "Please fill all fields.";
     }
 
@@ -164,6 +242,27 @@ export default function LoanOfficersDashboard() {
     } finally {
       setSaving(false);
     }
+=======
+      alert("Please fill all fields.");
+      return;
+    }
+
+    if (isEditing) {
+      setOfficers((prev) =>
+        prev.map((item) => (item.id === form.id ? { ...form } : item))
+      );
+    } else {
+      setOfficers((prev) => [
+        ...prev,
+        {
+          ...form,
+          id: Date.now(),
+        },
+      ]);
+    }
+
+    resetForm();
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
   };
 
   const generatedHtml = useMemo(() => {
@@ -173,8 +272,13 @@ export default function LoanOfficersDashboard() {
   <li>
     <strong>${escapeHtml(officer.name)}</strong><br>
     ${escapeHtml(officer.title)}, NMLS ${escapeHtml(officer.nmls)}<br>
+<<<<<<< HEAD
     <a href="${escapeHtml(officer.appointmentUrl)}" target="_blank" rel="noopener noreferrer">Make Your Appointment</a><br>
     <a href="${escapeHtml(officer.profileUrl)}" target="_blank" rel="noopener noreferrer">Know More</a>
+=======
+    <a href="${escapeHtml(officer.appointmentUrl)}" target="_blank">Make Your Appointment</a><br>
+    <a href="${escapeHtml(officer.profileUrl)}" target="_blank">Know More</a>
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
   </li>`
       )
       .join("\n");
@@ -199,11 +303,17 @@ ${items}
     <div className="loan-officer-page">
       <div className="loan-officer-header">
         <h2>Loan Officer Record Manager</h2>
+<<<<<<< HEAD
         <p>Manage live loan officer records from database.</p>
       </div>
 
       {error && <div className="loan-officer-alert error">{error}</div>}
 
+=======
+        <p>Update appointment links and profile records from the frontend.</p>
+      </div>
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       <div className="loan-officer-grid">
         <div className="loan-officer-card">
           <h3>{isEditing ? "Edit Loan Officer" : "Add Loan Officer"}</h3>
@@ -264,6 +374,7 @@ ${items}
               />
             </div>
 
+<<<<<<< HEAD
             <div className="form-group">
               <label>Sort Order</label>
               <input
@@ -302,6 +413,14 @@ ${items}
                 onClick={resetForm}
                 disabled={saving}
               >
+=======
+            <div className="form-actions">
+              <button type="submit" className="primary-btn">
+                {isEditing ? "Update Record" : "Add Record"}
+              </button>
+
+              <button type="button" className="secondary-btn" onClick={resetForm}>
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
                 Reset
               </button>
             </div>
@@ -314,6 +433,7 @@ ${items}
             <span>{officers.length} total</span>
           </div>
 
+<<<<<<< HEAD
           {loading ? (
             <div className="loan-officer-empty">Loading records...</div>
           ) : officers.length === 0 ? (
@@ -363,17 +483,62 @@ ${items}
               ))}
             </div>
           )}
+=======
+          <div className="officer-list">
+            {officers.map((officer) => (
+              <div key={officer.id} className="officer-item">
+                <div className="officer-info">
+                  <h4>{officer.name}</h4>
+                  <p>
+                    {officer.title}, NMLS {officer.nmls}
+                  </p>
+                  <a
+                    href={officer.appointmentUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Appointment Link
+                  </a>
+                  <a href={officer.profileUrl} target="_blank" rel="noreferrer">
+                    Profile Link
+                  </a>
+                </div>
+
+                <div className="officer-actions">
+                  <button
+                    type="button"
+                    className="edit-btn"
+                    onClick={() => handleEdit(officer)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    className="delete-btn"
+                    onClick={() => handleDelete(officer.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
         </div>
       </div>
 
       <div className="loan-officer-card preview-card">
         <div className="card-head">
           <h3>Live Preview</h3>
+<<<<<<< HEAD
           <button
             type="button"
             className="primary-btn small-btn"
             onClick={handleCopyHtml}
           >
+=======
+          <button type="button" className="primary-btn small-btn" onClick={handleCopyHtml}>
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
             {copied ? "Copied" : "Copy HTML"}
           </button>
         </div>
@@ -386,7 +551,15 @@ ${items}
 
       <div className="loan-officer-card">
         <h3>Generated HTML</h3>
+<<<<<<< HEAD
         <textarea className="html-output" value={generatedHtml} readOnly />
+=======
+        <textarea
+          className="html-output"
+          value={generatedHtml}
+          readOnly
+        />
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       </div>
     </div>
   );

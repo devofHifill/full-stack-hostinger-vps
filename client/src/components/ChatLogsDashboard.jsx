@@ -1,8 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import DateFilter from "./DateFilter";
 import { buildDateFilterParams } from "../utils/dateFilterParams";
+<<<<<<< HEAD
 import "./styles/ChatLogsDashboard.css";
 import { useApiClient } from "../hooks/useApiClient";
+=======
+import "./ChatLogsDashboard.css";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 export default function ChatLogsDashboard() {
   const [sessions, setSessions] = useState([]);
@@ -21,7 +25,12 @@ export default function ChatLogsDashboard() {
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
 
+<<<<<<< HEAD
   const { requestJson } = useApiClient();
+=======
+  const API = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -33,10 +42,26 @@ export default function ChatLogsDashboard() {
       setLoadingMessages(true);
       setActiveSession(sessionId);
 
+<<<<<<< HEAD
       const data = await requestJson(`/chat/${sessionId}`, {
         method: "GET",
       });
 
+=======
+      const endpoint = `/api/chat/${sessionId}`;
+      const url = API ? `${API}${endpoint}` : endpoint;
+
+      const res = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
+      }
+
+      const data = await res.json();
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       setMessages(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to load messages:", err);
@@ -79,10 +104,26 @@ export default function ChatLogsDashboard() {
         params.set("page", String(page));
         params.set("limit", "10");
 
+<<<<<<< HEAD
         const data = await requestJson(`/chat/sessions?${params.toString()}`, {
           method: "GET",
         });
 
+=======
+        const endpoint = `/api/chat/sessions?${params.toString()}`;
+        const url = API ? `${API}${endpoint}` : endpoint;
+
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Request failed with status ${res.status}`);
+        }
+
+        const data = await res.json();
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
         const sessionItems = Array.isArray(data.items) ? data.items : [];
 
         if (!ignore) {
@@ -155,6 +196,14 @@ export default function ChatLogsDashboard() {
         </div>
       </div>
 
+<<<<<<< HEAD
+=======
+      <div className="demo-banner">
+        Demo Page: This dashboard is connected to live backend data.
+        Final features and metrics may change.
+      </div>
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
       <div className="filters chat-logs-filters">
         <DateFilter
           value={dateFilter}
@@ -238,6 +287,10 @@ export default function ChatLogsDashboard() {
                   <div className="chatBubble">
                     <div className="chatMeta">
                       <span className="chatRole">{isUser ? "User" : "Bot"}</span>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
                       <span className="chatTime">{formatTime(m.createdAt)}</span>
                     </div>
 
@@ -253,7 +306,11 @@ export default function ChatLogsDashboard() {
             })
           )}
 
+<<<<<<< HEAD
           <div ref={messagesEndRef} />
+=======
+          <div ref={messagesEndRef}></div>
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
         </div>
       </div>
     </>

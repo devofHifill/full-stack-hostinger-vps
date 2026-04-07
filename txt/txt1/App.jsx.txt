@@ -1,0 +1,31 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import Dashboard from "./components/layout/Dashboard";
+import CallLogsPage from "./components/pages/CallLogsPage";
+import ChatLogsPage from "./components/pages/ChatLogsPage";
+
+export default function App(){
+
+  return(
+
+    <BrowserRouter>
+
+      <Routes>
+
+        <Route element={<Dashboard/>}>
+
+          <Route path="/" element={<Navigate to="/calls"/>}/>
+
+          <Route path="/calls" element={<CallLogsPage/>}/>
+
+          <Route path="/chat" element={<ChatLogsPage/>}/>
+
+        </Route>
+
+      </Routes>
+
+    </BrowserRouter>
+
+  )
+
+}

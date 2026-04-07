@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import DateFilter from "./DateFilter";
 import { buildDateFilterParams } from "../utils/dateFilterParams";
+<<<<<<< HEAD
 import "./styles/ChatLeadDashboard.css";
 import { useApiClient } from "../hooks/useApiClient";
+=======
+import "./ChatLeadDashboard.css";
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
 /* ---------------- HELPERS ---------------- */
 
@@ -77,8 +81,11 @@ export default function ChatLeadDashboard() {
   const [dateFilter, setDateFilter] = useState("all");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
+<<<<<<< HEAD
   const { requestJson } = useApiClient();
 
+=======
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
   /* ---------------- FETCH DATA ---------------- */
 
@@ -107,6 +114,10 @@ export default function ChatLeadDashboard() {
           }
         }
 
+<<<<<<< HEAD
+=======
+        const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
         const params = buildDateFilterParams(
           dateFilter,
@@ -117,8 +128,24 @@ export default function ChatLeadDashboard() {
         params.set("page", String(page));
         params.set("limit", "10");
 
+<<<<<<< HEAD
         const data = await requestJson(`/chat-leads?${params.toString()}`);
 
+=======
+        const endpoint = `/api/chat-leads?${params.toString()}`;
+        const url = apiBase ? `${apiBase}${endpoint}` : endpoint;
+
+        const res = await fetch(url, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch chat leads: ${res.status}`);
+        }
+
+        const data = await res.json();
+>>>>>>> 4d56ff2d36d452c47ffc29466fe5cb9bd26d84de
 
         if (!ignore) {
           setLeads(Array.isArray(data.items) ? data.items : []);

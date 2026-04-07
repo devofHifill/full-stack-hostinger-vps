@@ -3,22 +3,97 @@ import Call from "../models/Call.js";
 
 const router = express.Router();
 
-// GET all calls (latest first)
+/*
+GET all calls (paginated)
+GET /api/calls?page=1&limit=20
+*/
 router.get("/", async (req, res) => {
   try {
-    const calls = await Call.find()
-      .sort({ startedAt: -1 })
-      .limit(100);
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.max(parseInt(req.query.limit || "20", 10), 1);
+    const skip = (page - 1) * limit;
 
-    res.json(calls);
+    const { range = "all", startDate, endDate } = req.query;
+
+    /* ---------------- DATE FILTER ---------------- */
+
+    const match = {};
+
+    if (range === "today") {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+
+      match.startedAt = { $gte: start, $lte: end };
+    }
+
+    else if (range === "7d") {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(start.getDate() - 7);
+
+      match.startedAt = { $gte: start, $lte: end };
+    }
+
+    else if (range === "30d") {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(start.getDate() - 30);
+
+      match.startedAt = { $gte: start, $lte: end };
+    }
+
+    else if (startDate || endDate) {
+      match.startedAt = {};
+
+      if (startDate) {
+        match.startedAt.$gte = new Date(`${startDate}T00:00:00.000Z`);
+      }
+
+      if (endDate) {
+        match.startedAt.$lte = new Date(`${endDate}T23:59:59.999Z`);
+      }
+    }
+
+    /* ---------------- QUERY ---------------- */
+
+    const totalItems = await Call.countDocuments(match);
+
+    const rows = await Call.find(match)
+      .sort({ startedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const totalPages = Math.ceil(totalItems / limit) || 1;
+
+    res.json({
+      items: rows,
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+
   } catch (err) {
+    console.error("Error fetching calls:", err);
     res.status(500).json({ error: "Failed to fetch calls" });
   }
 });
 
-// GET stats
+/*
+GET stats
+/api/calls/stats
+*/
 router.get("/stats", async (req, res) => {
   try {
+
     const stats = await Call.aggregate([
       {
         $group: {
@@ -46,9 +121,33 @@ router.get("/stats", async (req, res) => {
     ]);
 
     res.json(stats[0] || {});
+
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch stats" });
   }
 });
+
+
+/*
+GET single call
+/api/calls/:callId
+*/
+router.get("/:callId", async (req, res) => {
+  try {
+
+    const call = await Call.findOne({ callId: req.params.callId });
+
+    if (!call) {
+      return res.status(404).json({ error: "Call not found" });
+    }
+
+    res.json(call);
+
+  } catch (err) {
+    console.error("Error fetching call:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 export default router;

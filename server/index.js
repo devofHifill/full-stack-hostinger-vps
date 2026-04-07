@@ -1,8 +1,25 @@
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./db.js";
+
+import ChatSession from "./models/ChatSession.js";
+import ChatMessage from "./models/ChatMessage.js";
+import ChatLead from "./models/ChatLead.js";
+
 import callsRoutes from "./routes/calls.js";
 import webhookRoutes from "./routes/webhook.js";
+import chatRoutes from "./routes/chatRoutes.js";
+import chatLeadRoutes from "./routes/chatLeadRoutes.js";
+import callLeadRoutes from "./routes/callLeadRoutes.js";
+import callMetricsRoutes from "./routes/callMetricsRoutes.js";
+import chatMetricsRoutes from "./routes/chatMetricsRoutes.js";
+import outboundContactsRoutes from "./routes/outboundContacts.js";
+import outboundContactUploadRoutes from "./routes/outboundContactUpload.js";
+import workflowScheduleRoutes from "./routes/workflowScheduleRoutes.js";
+import workflowExecutionRoutes from "./routes/workflowExecutionRoutes.js";
+import loanOfficerRoutes from "./routes/loanOfficerRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import authMiddleware from "./middleware/authMiddleware.js";
 
 
 const app = express();   // 👈 MUST be before app.use()
@@ -33,9 +50,40 @@ app.use((req, res, next) => {
   next();
 });
 
+// // 👇 Register routes AFTER app exists
+// app.use("/api/webhook", webhookRoutes);
+// app.use("/api/calls", callsRoutes);
+// app.use("/api/chat", chatRoutes);
+// app.use("/api/chat-leads", chatLeadRoutes);
+// app.use("/api/call-leads", callLeadRoutes);
+// app.use("/api", callMetricsRoutes);
+// app.use("/api", chatMetricsRoutes);
+// app.use("/api/outbound-contacts", outboundContactsRoutes);
+// app.use("/api/outbound-contacts", outboundContactUploadRoutes);
+// app.use("/api/workflow-schedules", workflowScheduleRoutes);
+// app.use("/api/workflow-executions", workflowExecutionRoutes);
+// app.use("/api/loan-officers", loanOfficerRoutes);
+// app.use("/api/auth", authRoutes);
+
+
 // 👇 Register routes AFTER app exists
+app.use("/api/auth", authRoutes);
+
+// public routes
 app.use("/api/webhook", webhookRoutes);
-app.use("/api/calls", callsRoutes);
+
+// protected routes
+app.use("/api/calls", authMiddleware, callsRoutes);
+app.use("/api/chat", authMiddleware, chatRoutes);
+app.use("/api/chat-leads", authMiddleware, chatLeadRoutes);
+app.use("/api/call-leads", authMiddleware, callLeadRoutes);
+app.use("/api", authMiddleware, callMetricsRoutes);
+app.use("/api", authMiddleware, chatMetricsRoutes);
+app.use("/api/outbound-contacts", authMiddleware, outboundContactsRoutes);
+app.use("/api/outbound-contacts", authMiddleware, outboundContactUploadRoutes);
+app.use("/api/workflow-schedules", authMiddleware, workflowScheduleRoutes);
+app.use("/api/workflow-executions", authMiddleware, workflowExecutionRoutes);
+app.use("/api/loan-officers", authMiddleware, loanOfficerRoutes);
 
 
 // Health route
